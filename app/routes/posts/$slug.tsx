@@ -17,6 +17,7 @@ export default function PostSlug() {
       <Link to={"/admin/posts/" + post.slug + "/edit"} className="float-end">
         Edit Post
       </Link>
+      <h1>{post.title}</h1>
       <div dangerouslySetInnerHTML={{ __html: post.html }} />
     </main>
   );

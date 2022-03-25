@@ -2,7 +2,7 @@
 title: Test Title
 ---
 
-# this is a test
+# This is a Test
 
 and things
 
