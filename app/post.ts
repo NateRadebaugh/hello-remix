@@ -1,3 +1,4 @@
+import { matchSorter } from "match-sorter";
 import path from "path";
 import fs from "fs/promises";
 import parseFrontMatter from "front-matter";
@@ -5,28 +6,49 @@ import invariant from "tiny-invariant";
 import { marked } from "marked";
 import { json } from "remix";
 
-export type Post = {
+export type PostType = "info" | "success" | "warning" | "danger";
+export interface Post {
   slug: string;
   title: string;
+  type: PostType | "";
   html: string;
-};
+}
 
-export type PostSource = {
+export interface PostSource {
   slug: string;
   title: string;
+  type: PostType | "";
   markdown: string;
-};
+}
 
-export type PostMarkdownAttributes = {
+export interface PostMarkdownAttributes {
   title: string;
-};
+  type: PostType | "";
+}
 
 const postsPath = path.join(__dirname, "..", "posts");
 
-function isValidPostAttributes(
+export function isValidPostAttributes(
   attributes: any
 ): attributes is PostMarkdownAttributes {
   return attributes?.title;
+}
+
+export function isValidPostType(type: any): type is PostType {
+  if (typeof type !== "string") {
+    return false;
+  }
+
+  switch (type) {
+    case "":
+    case "info":
+    case "success":
+    case "warn":
+    case "danger":
+      return true;
+  }
+
+  return false;
 }
 
 export async function getPosts(): Promise<Omit<Post, "html">[]> {
@@ -41,13 +63,74 @@ export async function getPosts(): Promise<Omit<Post, "html">[]> {
         isValidPostAttributes(attributes),
         `${filename} has bad meta data!`
       );
+      invariant(
+        isValidPostType(attributes.type ?? ""),
+        `${filename} has bad post type data!`
+      );
 
       return {
         slug: filename.replace(/\.md$/, ""),
         title: attributes.title,
+        type: attributes.type,
       };
     })
   );
+}
+
+export async function searchPosts(
+  q: string | undefined
+): Promise<Omit<Post, "html">[]> {
+  const dir = await fs.readdir(postsPath);
+  const allPosts = await Promise.all(
+    dir.map(async (filename) => {
+      const file = await fs.readFile(path.join(postsPath, filename));
+      const { attributes } = parseFrontMatter<PostMarkdownAttributes>(
+        file.toString()
+      );
+      invariant(
+        isValidPostAttributes(attributes),
+        `${filename} has bad meta data!`
+      );
+      invariant(
+        isValidPostType(attributes.type ?? ""),
+        `${filename} has bad post type data!`
+      );
+
+      return {
+        slug: filename.replace(/\.md$/, ""),
+        title: attributes.title,
+        type: attributes.type,
+      };
+    })
+  );
+
+  if (!q) {
+    //return [];
+  }
+
+  const filteredPosts = matchSorter(allPosts, q ?? "", { keys: ["title"] });
+  return filteredPosts;
+}
+
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+export async function searchPostTypes(q: string | undefined) {
+  const options: SelectOption[] = [
+    { value: "info", label: "Info" },
+    { value: "success", label: "Success" },
+    { value: "warning", label: "Warning" },
+    { value: "danger", label: "Danger" },
+  ];
+
+  if (!q) {
+    //return [];
+  }
+
+  const filtered = matchSorter(options, q ?? "", { keys: ["label"] });
+  return filtered;
 }
 
 export async function getPost(slug: string): Promise<Post> {
@@ -58,41 +141,59 @@ export async function getPost(slug: string): Promise<Post> {
     isValidPostAttributes(attributes),
     `Post ${filepath} is missing attributes`
   );
+  invariant(
+    isValidPostType(attributes.type ?? ""),
+    `${filepath} has bad post type data!`
+  );
+
   const html = marked(body);
-  return { slug, title: attributes.title, html };
+  return { slug, title: attributes.title, type: attributes.type, html };
 }
 
 export async function getPostSource(slug: string): Promise<PostSource> {
   const filepath = path.join(postsPath, slug + ".md");
   const file = await fs.readFile(filepath);
   const { attributes, body } = parseFrontMatter(file.toString());
+
   invariant(
     isValidPostAttributes(attributes),
     `Post ${filepath} is missing attributes`
   );
-  return { slug, title: attributes.title, markdown: body };
+  invariant(
+    isValidPostType(attributes.type ?? ""),
+    `${filepath} has bad post type data!`
+  );
+
+  return {
+    slug,
+    title: attributes.title,
+    type: attributes.type,
+    markdown: body,
+  };
 }
 
 type NewPost = {
-  title: string;
   slug: string;
+  title: string;
+  type: PostType;
   markdown: string;
 };
 
 export async function createPost(post: NewPost) {
-  const md = `---\ntitle: ${post.title}\n---\n\n${post.markdown}`;
+  const md = `---\ntitle: ${post.title}\ntype: ${post.type}\n---\n\n${post.markdown}`;
   await fs.writeFile(path.join(postsPath, post.slug + ".md"), md);
   return json(await getPost(post.slug));
 }
 
 type UpdatePost = {
-  title: string;
   slug: string;
+  title: string;
+  type: PostType;
   markdown: string;
 };
 
 export async function updatePost(post: UpdatePost) {
-  const md = `---\ntitle: ${post.title}\n---\n\n${post.markdown}`;
+  const md = `---\ntitle: ${post.title}\ntype: ${post.type}\n---\n\n${post.markdown}`;
   await fs.writeFile(path.join(postsPath, post.slug + ".md"), md);
   return json(await getPost(post.slug));
 }

@@ -8,10 +8,15 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from "remix";
-import bootstrapStyles from "bootstrap/dist/css/bootstrap.css";
 import type { MetaFunction, LoaderFunction } from "remix";
+import { QueryClient, QueryClientProvider } from "react-query";
+
 import Footer from "~/layout/footer";
 import Header from "~/layout/header";
+
+import bootstrapStyles from "bootstrap/dist/css/bootstrap.css";
+
+const queryClient = new QueryClient();
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
@@ -23,39 +28,42 @@ export const links = () => {
   return [{ rel: "stylesheet", href: bootstrapStyles }];
 };
 
-interface LoaderData {
-  year: number;
+type LoaderData = Awaited<ReturnType<typeof getLoaderData>>;
+
+async function getLoaderData() {
+  const year = new Date().getFullYear();
+  return {
+    year: year,
+  };
 }
 
 export const loader: LoaderFunction = async () => {
-  const year = new Date().getFullYear();
-  const loaderData: LoaderData = {
-    year: year,
-  };
-  return json(loaderData);
+  return json(await getLoaderData());
 };
 
 export default function App() {
   const { year } = useLoaderData<LoaderData>();
   return (
-    <html lang="en">
-      <head>
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        <Header />
+    <QueryClientProvider client={queryClient}>
+      <html lang="en">
+        <head>
+          <Meta />
+          <Links />
+        </head>
+        <body>
+          <Header />
 
-        <div className="container-fluid">
-          <Outlet />
-        </div>
+          <div className="container-fluid">
+            <Outlet />
+          </div>
 
-        <Footer year={year} />
+          <Footer year={year} />
 
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
-      </body>
-    </html>
+          <ScrollRestoration />
+          <Scripts />
+          <LiveReload />
+        </body>
+      </html>
+    </QueryClientProvider>
   );
 }

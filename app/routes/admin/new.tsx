@@ -9,11 +9,13 @@ import {
 import type { ActionFunction } from "remix";
 import invariant from "tiny-invariant";
 
-import { createPost } from "~/post";
+import { createPost, isValidPostType } from "~/post";
+import PostTypePicker from "~/components/post-type-picker";
 
 type PostError = {
   title?: boolean;
   slug?: boolean;
+  type?: boolean;
   markdown?: boolean;
 };
 
@@ -22,12 +24,14 @@ export const action: ActionFunction = async ({ request }) => {
 
   const formData = await request.formData();
 
-  const title = formData.get("title");
   const slug = formData.get("slug");
+  const title = formData.get("title");
+  const type = formData.get("type");
   const markdown = formData.get("markdown");
 
   const errors: PostError = {};
   if (!title) errors.title = true;
+  if (!slug) errors.slug = true;
   if (!slug) errors.slug = true;
   if (!markdown) errors.markdown = true;
 
@@ -35,10 +39,11 @@ export const action: ActionFunction = async ({ request }) => {
     return json(errors);
   }
 
-  invariant(typeof title === "string");
   invariant(typeof slug === "string");
+  invariant(isValidPostType(type));
+  invariant(typeof title === "string");
   invariant(typeof markdown === "string");
-  await createPost({ title, slug, markdown });
+  await createPost({ slug, title, type, markdown });
 
   return redirect("/admin");
 };
@@ -52,6 +57,13 @@ export default function NewPost() {
       <fieldset disabled={Boolean(transition.submission)}>
         <p>
           <label className="w-100">
+            Post Slug:{" "}
+            {errors?.slug ? <em className="error">Slug is required</em> : null}
+            <input type="text" className="form-control" name="slug" />
+          </label>
+        </p>
+        <p>
+          <label className="w-100">
             Post Title:{" "}
             {errors?.title ? (
               <em className="error">Title is required</em>
@@ -61,9 +73,9 @@ export default function NewPost() {
         </p>
         <p>
           <label className="w-100">
-            Post Slug:{" "}
-            {errors?.slug ? <em className="error">Slug is required</em> : null}
-            <input type="text" className="form-control" name="slug" />
+            Post Type:{" "}
+            {errors?.title ? <em className="error">Type is required</em> : null}{" "}
+            <PostTypePicker name="type" />
           </label>
         </p>
         <p>
