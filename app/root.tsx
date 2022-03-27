@@ -53,9 +53,9 @@ export default function App() {
         <body>
           <Header />
 
-          <div className="container-fluid">
+          <main className="container-fluid">
             <Outlet />
-          </div>
+          </main>
 
           <Footer year={year} />
 

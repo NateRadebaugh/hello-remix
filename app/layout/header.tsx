@@ -12,13 +12,16 @@ export default function Header() {
               </Link>
             </li>
             <li>
-              <Link to="/posts" className="nav-link px-2 link-dark">
-                Posts
+              <Link
+                to="/admin/app/code-detail"
+                className="nav-link px-2 link-dark"
+              >
+                Admin - App Code Detail
               </Link>
             </li>
             <li>
-              <Link to="/admin" className="nav-link px-2 link-dark">
-                Admin
+              <Link to="/admin/posts" className="nav-link px-2 link-dark">
+                Admin - Posts
               </Link>
             </li>
           </ul>

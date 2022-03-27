@@ -11,7 +11,7 @@ export default function Posts() {
   const posts = useLoaderData<Post[]>();
 
   return (
-    <main>
+    <div>
       <h1>Posts</h1>
 
       <ul>
@@ -21,6 +21,6 @@ export default function Posts() {
           </li>
         ))}
       </ul>
-    </main>
+    </div>
   );
 }

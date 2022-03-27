@@ -13,12 +13,12 @@ export const loader: LoaderFunction = async ({ params }) => {
 export default function PostSlug() {
   const post = useLoaderData<Post>();
   return (
-    <main>
+    <div>
       <Link to={"/admin/posts/" + post.slug + "/edit"} className="float-end">
         Edit Post
       </Link>
       <h1>{post.title}</h1>
       <div dangerouslySetInnerHTML={{ __html: post.html }} />
-    </main>
+    </div>
   );
 }

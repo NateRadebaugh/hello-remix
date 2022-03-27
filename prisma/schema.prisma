@@ -1,0 +1,538 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model AppAnnouncement {
+  AppAnnouncementId Int       @id(map: "PK_AppAnnouncement") @default(autoincrement())
+  EffectiveDate     DateTime? @db.DateTime
+  ExpirationDate    DateTime? @db.DateTime
+  Subject           String?   @db.VarChar(2000)
+  AnnouncementText  String?   @db.VarChar(Max)
+  ForceToTopOfList  Boolean
+  Sort              Int?
+  Active            Boolean
+  CreateDate        DateTime  @db.DateTime
+  CreateUser        String    @db.VarChar(100)
+  ModifyDate        DateTime? @db.DateTime
+  ModifyUser        String?   @db.VarChar(100)
+
+  @@index([EffectiveDate, ExpirationDate], map: "IX_AppAnnouncement_EffectiveDate_ExpirationDate")
+}
+
+model AppCodeDetail {
+  AppCodeDetailId Int       @id(map: "PK_AppCodeDetail") @default(autoincrement())
+  CodeGroup       String    @db.VarChar(255)
+  CodeValue       String    @db.VarChar(255)
+  Description     String?   @db.VarChar(255)
+  Sort            Int?
+  Default         Boolean
+  Active          Boolean
+  CreateDate      DateTime  @db.DateTime
+  CreateUser      String    @db.VarChar(100)
+  ModifyDate      DateTime? @db.DateTime
+  ModifyUser      String?   @db.VarChar(100)
+
+  @@unique([CodeGroup, CodeValue], map: "IX_AppCodeDetail_Field_Code")
+}
+
+model AppContent {
+  AppContentId Int       @id(map: "PK_AppContent") @default(autoincrement())
+  ContentGroup String?   @db.VarChar(255)
+  ContentName  String    @unique(map: "IX_AppContent_ContentName") @db.VarChar(255)
+  ContentValue String?   @db.VarChar(Max)
+  Active       Boolean
+  CreateDate   DateTime  @db.DateTime
+  CreateUser   String    @db.VarChar(100)
+  ModifyDate   DateTime? @db.DateTime
+  ModifyUser   String?   @db.VarChar(100)
+}
+
+model AppEmailTemplate {
+  AppEmailTemplateId   Int       @id(map: "PK_AppEmailTemplate") @default(autoincrement())
+  TemplateCode         String    @unique(map: "IX_AppEmailTemplate_TemplateCode") @db.VarChar(255)
+  Name                 String?   @db.VarChar(255)
+  Description          String?   @db.VarChar(2000)
+  EmailTo              String?   @db.VarChar(2000)
+  EmailCC              String?   @db.VarChar(2000)
+  EmailBCC             String?   @db.VarChar(2000)
+  EmailFrom            String?   @db.VarChar(2000)
+  EmailFromDisplayName String?   @db.VarChar(2000)
+  EmailSubject         String?   @db.VarChar(2000)
+  EmailBody            String?   @db.VarChar(Max)
+  HTML                 Boolean
+  Active               Boolean
+  CreateDate           DateTime  @db.DateTime
+  CreateUser           String    @db.VarChar(100)
+  ModifyDate           DateTime? @db.DateTime
+  ModifyUser           String?   @db.VarChar(100)
+}
+
+model AppEventLog {
+  AppEventLogId   BigInt   @id(map: "PK_AppEventLog") @default(autoincrement())
+  MachineName     String?  @db.VarChar(150)
+  ApplicationCode String?  @db.VarChar(50)
+  UserName        String?  @db.VarChar(100)
+  SessionId       String?  @db.VarChar(100)
+  TransactionId   String?  @db.VarChar(100)
+  EventDate       DateTime
+  LogLevel        String?  @db.VarChar(10)
+  Message         String?  @db.VarChar(Max)
+  StackTrace      String?  @db.VarChar(Max)
+  EventCode       String?  @db.VarChar(50)
+  SourceClass     String?  @db.VarChar(150)
+  SourceMethod    String?  @db.VarChar(150)
+  SourceObject    String?  @db.VarChar(150)
+  SourceId        String?  @db.VarChar(150)
+
+  @@index([EventDate], map: "IX_AppEventLog_EventDate")
+}
+
+model AppMenu {
+  AppMenuId   Int           @id(map: "PK_AppMenu") @default(autoincrement())
+  MenuCode    String        @unique(map: "IX_AppMenu_MenuCode") @db.VarChar(255)
+  Name        String?       @db.VarChar(255)
+  Description String?       @db.VarChar(2000)
+  Active      Boolean
+  CreateDate  DateTime      @db.DateTime
+  CreateUser  String        @db.VarChar(100)
+  ModifyDate  DateTime?     @db.DateTime
+  ModifyUser  String?       @db.VarChar(100)
+  AppMenuItem AppMenuItem[]
+}
+
+model AppMenuItem {
+  AppMenuItemId       Int           @id(map: "PK_AppMenuItem") @default(autoincrement())
+  AppMenuId           Int
+  ParentAppMenuItemId Int?
+  Name                String        @db.VarChar(255)
+  Handler             String?       @db.VarChar(1000)
+  Image               String?       @db.VarChar(1000)
+  Text                String?       @db.VarChar(1000)
+  Style               String?       @db.VarChar(1000)
+  ToolTip             String?       @db.VarChar(1000)
+  Sort                Int?
+  Active              Boolean
+  CreateDate          DateTime      @db.DateTime
+  CreateUser          String        @db.VarChar(100)
+  ModifyDate          DateTime?     @db.DateTime
+  ModifyUser          String?       @db.VarChar(100)
+  AppMenu             AppMenu       @relation(fields: [AppMenuId], references: [AppMenuId], onUpdate: NoAction, map: "FK__AppMenuIt__AppMe__6D0D32F4")
+  AppMenuItem         AppMenuItem?  @relation("AppMenuItemToAppMenuItem_ParentAppMenuItemId", fields: [ParentAppMenuItemId], references: [AppMenuItemId], onDelete: NoAction, onUpdate: NoAction, map: "FK__AppMenuIt__Paren__6E01572D")
+  other_AppMenuItem   AppMenuItem[] @relation("AppMenuItemToAppMenuItem_ParentAppMenuItemId")
+
+  @@index([AppMenuId, AppMenuItemId], map: "IX_AppMenuItem_AppMenuId")
+  @@index([ParentAppMenuItemId, AppMenuItemId], map: "IX_AppMenuItem_ParentMenuItemId")
+}
+
+model AppRecordLock {
+  AppRecordLockId Int      @id(map: "PK_AppRecordLock") @default(autoincrement())
+  RecordType      String   @db.VarChar(255)
+  RecordKey       String   @db.VarChar(255)
+  OwnerName       String?  @db.VarChar(100)
+  OwnerSource     String?  @db.VarChar(100)
+  OwnerDevice     String?  @db.VarChar(255)
+  LockDateTime    DateTime @db.DateTime
+  ValidDateTime   DateTime @db.DateTime
+
+  @@unique([RecordType, RecordKey], map: "IX_AppRecordLock_RecordType_RecordKey")
+}
+
+model AppSQLLog {
+  AppSQLLogId                BigInt    @id(map: "PK_AppSQLLog") @default(autoincrement())
+  SecurityUserId             Int?
+  SecurityUserLoginHistoryId Int?
+  UserName                   String?   @db.VarChar(100)
+  MachineName                String?   @db.VarChar(150)
+  ApplicationCode            String?   @db.VarChar(50)
+  SessionId                  String?   @db.VarChar(100)
+  TransactionId              String?   @db.VarChar(100)
+  EventDate                  DateTime
+  Connection                 String?   @db.VarChar(255)
+  SQLStatement               String?   @db.VarChar(Max)
+  SQLParameters              String?   @db.VarChar(Max)
+  Successful                 Boolean
+  ExecuteTimeMS              Int?
+  ExceptionDetail            String?   @db.VarChar(Max)
+  AddtlInfo                  String?   @db.VarChar(Max)
+  CreateDate                 DateTime  @db.DateTime
+  CreateUser                 String    @db.VarChar(100)
+  ModifyDate                 DateTime? @db.DateTime
+  ModifyUser                 String?   @db.VarChar(100)
+
+  @@index([CreateDate], map: "IX_AppSQLLog_EventDate")
+  @@index([SecurityUserId, CreateDate], map: "IX_AppSQLLog_SecurityUserId")
+  @@index([SecurityUserLoginHistoryId, CreateDate], map: "IX_AppSQLLog_SecurityUserLoginHistoryId")
+}
+
+model AppVariable {
+  AppVariableId Int       @id(map: "PK_AppVariable") @default(autoincrement())
+  VariableGroup String?   @db.VarChar(255)
+  VariableName  String    @unique(map: "IX_AppVariable_VariableName") @db.VarChar(255)
+  VariableValue String?   @db.VarChar(Max)
+  Active        Boolean
+  CreateDate    DateTime  @db.DateTime
+  CreateUser    String    @db.VarChar(100)
+  ModifyDate    DateTime? @db.DateTime
+  ModifyUser    String?   @db.VarChar(100)
+}
+
+model ScheduledJobEntry {
+  JobId             Int       @id(map: "PK_ScheduledJobEntry") @default(autoincrement())
+  ProviderName      String    @db.VarChar(255)
+  Request           String?   @db.VarChar(Max)
+  Schedule          String?   @db.VarChar(Max)
+  Distribution      String?   @db.VarChar(Max)
+  NotificationStyle String?   @db.VarChar(50)
+  UserName          String?   @db.VarChar(100)
+  LastScheduled     DateTime? @db.DateTime
+  EntryId           Int?
+  Held              Boolean
+  JobClass          String?   @db.VarChar(50)
+  CreateDate        DateTime  @db.DateTime
+  CreateUser        String    @db.VarChar(100)
+  ModifyDate        DateTime? @db.DateTime
+  ModifyUser        String?   @db.VarChar(100)
+}
+
+model ScheduledJobHistoryAttachment {
+  ScheduledJobHistoryAttachmentId Int       @id(map: "PK_ScheduledJobHistoryAttachment") @default(autoincrement())
+  EntryId                         Int
+  JobId                           Int
+  OriginalFileName                String?   @db.VarChar(Max)
+  StoredFileName                  String?   @db.VarChar(Max)
+  CreateDate                      DateTime  @db.DateTime
+  CreateUser                      String    @db.VarChar(100)
+  ModifyDate                      DateTime? @db.DateTime
+  ModifyUser                      String?   @db.VarChar(100)
+}
+
+model ScheduledJobHistoryEntry {
+  EntryId           Int       @id(map: "PK_ScheduledJobHistoryEntry") @default(autoincrement())
+  JobId             Int
+  ProviderName      String    @db.VarChar(255)
+  Request           String?   @db.VarChar(Max)
+  Schedule          String?   @db.VarChar(Max)
+  Distribution      String?   @db.Text
+  NotificationStyle String?   @db.VarChar(50)
+  StartTime         DateTime? @db.DateTime
+  EndTime           DateTime? @db.DateTime
+  JobState          String?   @db.VarChar(Max)
+  Message           String?   @db.VarChar(Max)
+  ErrorMessage      String?   @db.VarChar(Max)
+  JobClass          String?   @db.VarChar(50)
+  SchedulerId       String?   @db.VarChar(100)
+  JobStatus         String?   @db.VarChar(Max)
+  CreateDate        DateTime  @db.DateTime
+  CreateUser        String    @db.VarChar(100)
+  ModifyDate        DateTime? @db.DateTime
+  ModifyUser        String?   @db.VarChar(100)
+
+  @@index([StartTime, EndTime], map: "IX_ScheduledJobHistoryEntry_StartTime_EndTime")
+}
+
+model SecurityAccess {
+  SecurityAccessId    Int               @id(map: "PK_SecurityAccess") @default(autoincrement())
+  SecurityRoleId      Int
+  SecuritySecurableId Int
+  SecurityActionId    Int
+  Allowed             Boolean
+  CreateDate          DateTime          @db.DateTime
+  CreateUser          String            @db.VarChar(100)
+  ModifyDate          DateTime?         @db.DateTime
+  ModifyUser          String?           @db.VarChar(100)
+  SecurityAction      SecurityAction    @relation(fields: [SecurityActionId], references: [SecurityActionId], onUpdate: NoAction, map: "FK__SecurityA__Secur__04E4BC85")
+  SecurityRole        SecurityRole      @relation(fields: [SecurityRoleId], references: [SecurityRoleId], onUpdate: NoAction, map: "FK__SecurityA__Secur__02FC7413")
+  SecuritySecurable   SecuritySecurable @relation(fields: [SecuritySecurableId], references: [SecuritySecurableId], onUpdate: NoAction, map: "FK__SecurityA__Secur__03F0984C")
+
+  @@unique([SecurityRoleId, SecuritySecurableId, SecurityActionId], map: "IX_SecurityAccess_Role_Securable_Action")
+}
+
+model SecurityAction {
+  SecurityActionId        Int                       @id(map: "PK_SecurityAction") @default(autoincrement())
+  Name                    String                    @unique(map: "IX_SecurityAction_Name") @db.VarChar(255)
+  Description             String?                   @db.VarChar(2000)
+  CreateDate              DateTime                  @db.DateTime
+  CreateUser              String                    @db.VarChar(100)
+  ModifyDate              DateTime?                 @db.DateTime
+  ModifyUser              String?                   @db.VarChar(100)
+  SecurityAccess          SecurityAccess[]
+  SecuritySecurableAction SecuritySecurableAction[]
+}
+
+model SecurityPasswordResetRequest {
+  SecurityPasswordResetRequestId Int           @id(map: "PK_SecurityPasswordResetRequest") @default(autoincrement())
+  SecurityUserId                 Int?
+  UserName                       String?       @db.VarChar(100)
+  Token                          String        @db.VarChar(255)
+  EmailAddress                   String?       @db.VarChar(255)
+  IPAddress                      String?       @db.VarChar(100)
+  RequestDate                    DateTime      @db.DateTime
+  ExpirationDate                 DateTime?     @db.DateTime
+  Processed                      Boolean
+  ProcessDate                    DateTime?     @db.DateTime
+  CreateDate                     DateTime      @db.DateTime
+  CreateUser                     String        @db.VarChar(100)
+  ModifyDate                     DateTime?     @db.DateTime
+  ModifyUser                     String?       @db.VarChar(100)
+  SecurityUser                   SecurityUser? @relation(fields: [SecurityUserId], references: [SecurityUserId], onDelete: NoAction, onUpdate: NoAction, map: "FK__SecurityP__Secur__2B0A656D")
+
+  @@index([SecurityUserId, Token], map: "IX_SecurityPasswordResetRequest_SecurityUserId_Token")
+  @@index([UserName, Token], map: "IX_SecurityPasswordResetRequest_UserName_Token")
+}
+
+model SecurityQuestion {
+  SecurityQuestionId         Int                          @id(map: "PK_SecurityQuestion") @default(autoincrement())
+  Question                   String                       @unique(map: "IX_SecurityRole_Question") @db.VarChar(500)
+  Active                     Boolean
+  CreateDate                 DateTime                     @db.DateTime
+  CreateUser                 String                       @db.VarChar(100)
+  ModifyDate                 DateTime?                    @db.DateTime
+  ModifyUser                 String?                      @db.VarChar(100)
+  SecurityUserQuestionAnswer SecurityUserQuestionAnswer[]
+}
+
+model SecurityRole {
+  SecurityRoleId             Int                          @id(map: "PK_SecurityRole") @default(autoincrement())
+  Name                       String                       @unique(map: "IX_SecurityRole_Name") @db.VarChar(255)
+  Description                String?                      @db.VarChar(2000)
+  ADGroupName                String?                      @db.VarChar(255)
+  Default                    Boolean
+  Active                     Boolean
+  CreateDate                 DateTime                     @db.DateTime
+  CreateUser                 String                       @db.VarChar(100)
+  ModifyDate                 DateTime?                    @db.DateTime
+  ModifyUser                 String?                      @db.VarChar(100)
+  SecurityAccess             SecurityAccess[]
+  SecurityUserRoleMembership SecurityUserRoleMembership[]
+}
+
+model SecuritySecurable {
+  SecuritySecurableId       Int                       @id(map: "PK_SecuritySecurable") @default(autoincrement())
+  Name                      String                    @unique(map: "IX_SecuritySecurable_Name") @db.VarChar(255)
+  ParentSecuritySecurableId Int?
+  CreateDate                DateTime                  @db.DateTime
+  CreateUser                String                    @db.VarChar(100)
+  ModifyDate                DateTime?                 @db.DateTime
+  ModifyUser                String?                   @db.VarChar(100)
+  SecuritySecurable         SecuritySecurable?        @relation("SecuritySecurableToSecuritySecurable_ParentSecuritySecurableId", fields: [ParentSecuritySecurableId], references: [SecuritySecurableId], onDelete: NoAction, onUpdate: NoAction, map: "FK__SecurityS__Paren__00200768")
+  SecurityAccess            SecurityAccess[]
+  other_SecuritySecurable   SecuritySecurable[]       @relation("SecuritySecurableToSecuritySecurable_ParentSecuritySecurableId")
+  SecuritySecurableAction   SecuritySecurableAction[]
+
+  @@unique([ParentSecuritySecurableId, SecuritySecurableId], map: "IX_SecuritySecurable_ParentSecuritySecurableId")
+}
+
+model SecuritySecurableAction {
+  SecuritySecurableActionId Int               @id(map: "PK_SecuritySecurableAction") @default(autoincrement())
+  SecuritySecurableId       Int
+  SecurityActionId          Int
+  LoggedEvent               Boolean
+  CreateDate                DateTime          @db.DateTime
+  CreateUser                String            @db.VarChar(100)
+  ModifyDate                DateTime?         @db.DateTime
+  ModifyUser                String?           @db.VarChar(100)
+  SecurityAction            SecurityAction    @relation(fields: [SecurityActionId], references: [SecurityActionId], onUpdate: NoAction, map: "FK__SecurityS__Secur__09A971A2")
+  SecuritySecurable         SecuritySecurable @relation(fields: [SecuritySecurableId], references: [SecuritySecurableId], onUpdate: NoAction, map: "FK__SecurityS__Secur__08B54D69")
+
+  @@unique([SecuritySecurableId, SecurityActionId], map: "IX_SecuritySecurableAction_SecurableId_ActionId")
+}
+
+model SecuritySingleSignOnToken {
+  SecuritySingleSignOnTokenId Int           @id(map: "PK_SecuritySingleSignOnToken") @default(autoincrement())
+  SecurityUserId              Int?
+  UserName                    String?       @db.VarChar(100)
+  Token                       String        @db.VarChar(255)
+  IPAddress                   String?       @db.VarChar(100)
+  RequestDate                 DateTime      @db.DateTime
+  ExpirationDate              DateTime?     @db.DateTime
+  Processed                   Boolean
+  ProcessDate                 DateTime?     @db.DateTime
+  CreateDate                  DateTime      @db.DateTime
+  CreateUser                  String        @db.VarChar(100)
+  ModifyDate                  DateTime?     @db.DateTime
+  ModifyUser                  String?       @db.VarChar(100)
+  SecurityUser                SecurityUser? @relation(fields: [SecurityUserId], references: [SecurityUserId], onDelete: NoAction, onUpdate: NoAction, map: "FK__SecurityS__Secur__2EDAF651")
+
+  @@index([SecurityUserId, Token], map: "IX_SecuritySingleSignOnToken_SecurityUserId_Token")
+  @@index([UserName, Token], map: "IX_SecuritySingleSignOnToken_UserName_Token")
+}
+
+model SecurityUser {
+  SecurityUserId               Int                            @id(map: "PK_SecurityUser") @default(autoincrement())
+  UserName                     String                         @unique(map: "IX_SecurityUser_UserName") @db.VarChar(100)
+  EmailAddress                 String?                        @db.VarChar(255)
+  ExternalId                   String?                        @db.VarChar(255)
+  FirstName                    String?                        @db.VarChar(500)
+  LastName                     String?                        @db.VarChar(500)
+  AuthenticationMethod         String?                        @db.VarChar(50)
+  PasswordHash                 String?                        @db.VarChar(500)
+  PasswordSalt                 String?                        @db.VarChar(50)
+  PasswordLastChangedDate      DateTime?                      @db.DateTime
+  PasswordExpirationDate       DateTime?                      @db.DateTime
+  PasswordNeverExpires         Boolean
+  UserCannotChangePassword     Boolean
+  LastLoginDate                DateTime?                      @db.DateTime
+  AccountActivated             Boolean
+  AccountLocked                Boolean
+  AccountLockedDate            DateTime?                      @db.DateTime
+  AccountExpirationDate        DateTime?                      @db.DateTime
+  NumConsecutiveFailedLogins   Int
+  ActivationRequestDate        DateTime?                      @db.DateTime
+  ActivationConfirmedDate      DateTime?                      @db.DateTime
+  ActivationCookie             String?                        @db.VarChar(50)
+  TermsAndConditionsVersion    String?                        @db.VarChar(50)
+  ActiveDirectoryGuid          String?                        @db.UniqueIdentifier
+  ActiveDirectoryDn            String?                        @db.VarChar(500)
+  UserType                     String?                        @db.VarChar(100)
+  TimeZone                     String?                        @db.VarChar(100)
+  Locale                       String?                        @db.VarChar(100)
+  SystemAdmin                  Boolean
+  Active                       Boolean
+  CreateDate                   DateTime                       @db.DateTime
+  CreateUser                   String                         @db.VarChar(100)
+  ModifyDate                   DateTime?                      @db.DateTime
+  ModifyUser                   String?                        @db.VarChar(100)
+  TwoFactorAuthSecret          String?                        @db.VarChar(255)
+  AdditionalInfo1              String?                        @db.VarChar(255)
+  AdditionalInfo2              String?                        @db.VarChar(255)
+  AdditionalInfo3              String?                        @db.VarChar(255)
+  AdditionalInfo4              String?                        @db.VarChar(255)
+  AdditionalInfo5              String?                        @db.VarChar(255)
+  AdditionalInfo6              String?                        @db.VarChar(255)
+  AdditionalInfo7              String?                        @db.VarChar(255)
+  AdditionalInfo8              String?                        @db.VarChar(255)
+  AdditionalInfo9              String?                        @db.VarChar(255)
+  AdditionalInfo10             String?                        @db.VarChar(255)
+  SecurityPasswordResetRequest SecurityPasswordResetRequest[]
+  SecuritySingleSignOnToken    SecuritySingleSignOnToken[]
+  SecurityUserActivation       SecurityUserActivation[]
+  SecurityUserLoginHistory     SecurityUserLoginHistory[]
+  SecurityUserPasswordHistory  SecurityUserPasswordHistory[]
+  SecurityUserQuestionAnswer   SecurityUserQuestionAnswer[]
+  SecurityUserRoleMembership   SecurityUserRoleMembership[]
+}
+
+model SecurityUserActivation {
+  SecurityUserActivationId Int          @id(map: "PK_SecurityUserActivation") @default(autoincrement())
+  SecurityUserId           Int
+  UserName                 String?      @db.VarChar(100)
+  Token                    String       @db.VarChar(255)
+  EmailAddress             String?      @db.VarChar(255)
+  IPAddress                String?      @db.VarChar(100)
+  RequestDate              DateTime     @db.DateTime
+  ExpirationDate           DateTime?    @db.DateTime
+  Processed                Boolean
+  ProcessDate              DateTime?    @db.DateTime
+  CreateDate               DateTime     @db.DateTime
+  CreateUser               String       @db.VarChar(100)
+  ModifyDate               DateTime?    @db.DateTime
+  ModifyUser               String?      @db.VarChar(100)
+  SecurityUser             SecurityUser @relation(fields: [SecurityUserId], references: [SecurityUserId], onUpdate: NoAction, map: "FK__SecurityU__Secur__32AB8735")
+
+  @@index([SecurityUserId, Token], map: "IX_SecurityUserActivation_SecurityUserId_Token")
+  @@index([UserName, Token], map: "IX_SecurityUserActivation_UserName_Token")
+}
+
+model SecurityUserActivityHistory {
+  SecurityUserActivityHistoryId Int       @id(map: "PK_SecurityUserActivityHistory") @default(autoincrement())
+  SecurityUserId                Int?
+  SecurityUserLoginHistoryId    Int?
+  UserName                      String?   @db.VarChar(100)
+  MachineName                   String?   @db.VarChar(150)
+  ApplicationCode               String?   @db.VarChar(50)
+  IPAddress                     String?   @db.VarChar(100)
+  SessionId                     String?   @db.VarChar(255)
+  TransactionId                 String?   @db.VarChar(100)
+  RequestUrl                    String?   @db.VarChar(2000)
+  Method                        String?   @db.VarChar(100)
+  StatusCode                    Int?
+  LoadTimeMS                    Int?
+  Referrer                      String?   @db.VarChar(2000)
+  SecuritySecurableActionId     Int?
+  AddtlInfo                     String?   @db.VarChar(Max)
+  CreateDate                    DateTime  @db.DateTime
+  CreateUser                    String    @db.VarChar(100)
+  ModifyDate                    DateTime? @db.DateTime
+  ModifyUser                    String?   @db.VarChar(100)
+
+  @@index([CreateDate, SecurityUserId], map: "IX_SecurityUserActivityHistory_CreateDate_SecurityUserId")
+  @@index([SecurityUserId, CreateDate], map: "IX_SecurityUserActivityHistory_SecurityUserId")
+  @@index([SecurityUserLoginHistoryId, CreateDate], map: "IX_SecurityUserActivityHistory_SecurityUserLoginHistoryId")
+}
+
+model SecurityUserLoginHistory {
+  SecurityUserLoginHistoryId Int           @id(map: "PK_SecurityUserLog") @default(autoincrement())
+  SecurityUserId             Int?
+  UserName                   String?       @db.VarChar(100)
+  MachineName                String?       @db.VarChar(150)
+  ApplicationCode            String?       @db.VarChar(50)
+  SuccessfulLogin            Boolean
+  AccountWasLocked           Boolean
+  IPAddress                  String?       @db.VarChar(100)
+  Browser                    String?       @db.VarChar(255)
+  ScreenResolution           String?       @db.VarChar(255)
+  Message                    String?       @db.VarChar(2000)
+  SessionId                  String?       @db.VarChar(255)
+  SessionEndDate             DateTime?     @db.DateTime
+  LastRequestDate            DateTime?     @db.DateTime
+  SessionTimeoutDate         DateTime?     @db.DateTime
+  LastRequestUrl             String?       @db.VarChar(2000)
+  CreateDate                 DateTime      @db.DateTime
+  CreateUser                 String        @db.VarChar(100)
+  ModifyDate                 DateTime?     @db.DateTime
+  ModifyUser                 String?       @db.VarChar(100)
+  SecurityUser               SecurityUser? @relation(fields: [SecurityUserId], references: [SecurityUserId], onDelete: NoAction, onUpdate: NoAction, map: "FK__SecurityU__Secur__22751F6C")
+
+  @@index([CreateDate], map: "IX_SecurityUserLoginHistory_CreateDate")
+  @@index([SecurityUserId, CreateDate], map: "IX_SecurityUserLoginHistory_SecurityUserId_CreateDate")
+  @@index([UserName, CreateDate], map: "IX_SecurityUserLoginHistory_UserName_CreateDate")
+}
+
+model SecurityUserPasswordHistory {
+  SecurityUserPasswordHistoryId Int          @id(map: "PK_SecurityUserPasswordHistory") @default(autoincrement())
+  SecurityUserId                Int
+  PasswordHash                  String?      @db.VarChar(500)
+  PasswordSalt                  String?      @db.VarChar(50)
+  CreateDate                    DateTime     @db.DateTime
+  CreateUser                    String       @db.VarChar(100)
+  ModifyDate                    DateTime?    @db.DateTime
+  ModifyUser                    String?      @db.VarChar(100)
+  SecurityUser                  SecurityUser @relation(fields: [SecurityUserId], references: [SecurityUserId], onUpdate: NoAction, map: "FK__SecurityU__Secur__25518C17")
+
+  @@index([SecurityUserId], map: "IX_SecurityUserLoginHistory_SecurityUserId")
+}
+
+model SecurityUserQuestionAnswer {
+  SecurityUserQuestionAnswerId Int              @id(map: "PK_SecurityUserQuestionAnswer") @default(autoincrement())
+  SecurityQuestionId           Int
+  SecurityUserId               Int
+  QuestionAnswerHash           String           @db.VarChar(2000)
+  CreateDate                   DateTime         @db.DateTime
+  CreateUser                   String           @db.VarChar(100)
+  ModifyDate                   DateTime?        @db.DateTime
+  ModifyUser                   String?          @db.VarChar(100)
+  SecurityQuestion             SecurityQuestion @relation(fields: [SecurityQuestionId], references: [SecurityQuestionId], onUpdate: NoAction, map: "FK__SecurityU__Secur__1CBC4616")
+  SecurityUser                 SecurityUser     @relation(fields: [SecurityUserId], references: [SecurityUserId], onUpdate: NoAction, map: "FK__SecurityU__Secur__1DB06A4F")
+
+  @@unique([SecurityQuestionId, SecurityUserId], map: "IX_SecurityUserQuestionAnswer_Question_User")
+}
+
+model SecurityUserRoleMembership {
+  SecurityUserRoleMembershipId Int          @id(map: "PK_SecurityUserRoleMembership") @default(autoincrement())
+  SecurityRoleId               Int
+  SecurityUserId               Int
+  Active                       Boolean
+  CreateDate                   DateTime     @db.DateTime
+  CreateUser                   String       @db.VarChar(100)
+  ModifyDate                   DateTime?    @db.DateTime
+  ModifyUser                   String?      @db.VarChar(100)
+  SecurityRole                 SecurityRole @relation(fields: [SecurityRoleId], references: [SecurityRoleId], onUpdate: NoAction, map: "FK__SecurityU__Secur__160F4887")
+  SecurityUser                 SecurityUser @relation(fields: [SecurityUserId], references: [SecurityUserId], onUpdate: NoAction, map: "FK__SecurityU__Secur__17036CC0")
+
+  @@unique([SecurityRoleId, SecurityUserId], map: "IX_SecurityUserRoleMembership_Role_User")
+}
