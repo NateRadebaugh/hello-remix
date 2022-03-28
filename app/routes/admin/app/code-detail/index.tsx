@@ -98,7 +98,20 @@ export default function Index() {
               </td>
 
               <td>
-                <Link to={`${item.AppCodeDetailId}/delete`}>Delete</Link>
+                <p>
+                  <Link to={`${item.AppCodeDetailId}/edit`}>Edit</Link>
+                </p>
+                <Link
+                  to={`${item.AppCodeDetailId}/delete`}
+                  className="text-danger"
+                  onClick={(e) => {
+                    if (!confirm("Are you sure?")) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
+                  Delete
+                </Link>
               </td>
             </tr>
           ))}

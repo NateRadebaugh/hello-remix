@@ -1,5 +1,6 @@
 ---
 title: 90s Mixtape
+type: Standard
 ---
 
 - I wish (Skee-Lo)

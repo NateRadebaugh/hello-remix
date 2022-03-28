@@ -15,6 +15,8 @@ import {
   getAppCodeDetail,
   updateAppCodeDetail,
 } from "~/models/appCodeDetail.server";
+import { stringInvariant } from "~/utils/invariants";
+import { parseCheckbox, parseInt } from "~/utils/parse";
 
 interface LoaderData {
   isEdit: boolean;
@@ -23,9 +25,7 @@ interface LoaderData {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   if (params.id !== undefined) {
-    invariant(typeof params.id === "string");
-    const id = parseInt(params.id, 10);
-    invariant(!isNaN(id));
+    const id = parseInt(params.id);
 
     const item = await getAppCodeDetail({
       AppCodeDetailId: id,
@@ -61,35 +61,17 @@ export const action: ActionFunction = async ({ request, params }) => {
     return json(errors);
   }
 
-  invariant(typeof codeGroup === "string");
-  invariant(typeof codeValue === "string");
-  invariant(typeof description === "string");
-  invariant(typeof rawSort === "string");
+  stringInvariant(codeGroup);
+  stringInvariant(codeValue);
+  stringInvariant(description);
 
-  invariant(
-    rawActive === "on" || rawActive === undefined || rawActive === null,
-    "rawActive must be 'on' or not set, got " + rawActive
-  );
-  const active = rawActive === "on";
+  const active = parseCheckbox(rawActive);
+  const isDefault = parseCheckbox(rawIsDefault);
 
-  invariant(
-    rawIsDefault === "on" ||
-      rawIsDefault === undefined ||
-      rawIsDefault === null,
-    "rawIsDefault must be 'on' or not set, got " + rawIsDefault
-  );
-  const isDefault = rawIsDefault === "on";
-
-  const sort = parseInt(rawSort, 10);
-  invariant(!isNaN(sort));
+  const sort = parseInt(rawSort);
 
   if (rawAppCodeDetailId !== undefined) {
-    invariant(
-      typeof rawAppCodeDetailId === "string",
-      "appCodeDetailId must be set"
-    );
-    const appCodeDetailId = parseInt(rawAppCodeDetailId, 10);
-    invariant(!isNaN(appCodeDetailId), "appCodeDetailId must be a number");
+    const appCodeDetailId = parseInt(rawAppCodeDetailId);
 
     await updateAppCodeDetail({
       AppCodeDetailId: appCodeDetailId,
@@ -102,6 +84,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     });
   } else {
     invariant(!params.AppCodeDetailId);
+
     await createAppCodeDetail({
       CodeGroup: codeGroup,
       CodeValue: codeValue,

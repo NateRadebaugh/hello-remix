@@ -7,10 +7,9 @@ import {
   Link,
 } from "remix";
 import type { ActionFunction } from "remix";
-import invariant from "tiny-invariant";
-
-import { createPost, isValidPostType } from "~/post";
-import PostTypePicker from "~/components/post-type-picker";
+import { createPost } from "~/post";
+import UserTypePicker from "~/components/user-type-picker";
+import { stringInvariant } from "~/utils/invariants";
 
 type PostError = {
   title?: boolean;
@@ -37,10 +36,10 @@ export const action: ActionFunction = async ({ request }) => {
     return json(errors);
   }
 
-  invariant(typeof slug === "string");
-  invariant(isValidPostType(type));
-  invariant(typeof title === "string");
-  invariant(typeof markdown === "string");
+  stringInvariant(slug);
+  stringInvariant(type);
+  stringInvariant(title);
+  stringInvariant(markdown);
   await createPost({ slug, title, type, markdown });
 
   return redirect("/admin");
@@ -71,9 +70,9 @@ export default function NewPost() {
         </p>
         <p>
           <label className="w-100">
-            Post Type:{" "}
+            User Type:{" "}
             {errors?.title ? <em className="error">Type is required</em> : null}{" "}
-            <PostTypePicker name="type" />
+            <UserTypePicker name="type" />
           </label>
         </p>
         <p>

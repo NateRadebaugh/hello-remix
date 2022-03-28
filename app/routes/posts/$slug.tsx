@@ -1,12 +1,11 @@
 import { json, Link, useLoaderData } from "remix";
 import type { LoaderFunction } from "remix";
-import invariant from "tiny-invariant";
-
 import { getPost } from "~/post";
 import type { Post } from "~/post";
+import { stringInvariant } from "~/utils/invariants";
 
 export const loader: LoaderFunction = async ({ params }) => {
-  invariant(params.slug, "expected params.slug");
+  stringInvariant(params.slug);
   return json(await getPost(params.slug));
 };
 

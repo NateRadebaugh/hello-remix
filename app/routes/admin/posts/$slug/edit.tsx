@@ -9,15 +9,14 @@ import {
   Link,
 } from "remix";
 import type { ActionFunction } from "remix";
-import invariant from "tiny-invariant";
-
-import { isValidPostType, updatePost } from "~/post";
+import { updatePost } from "~/post";
 import { getPostSource } from "~/post";
 import type { PostSource } from "~/post";
-import PostTypePicker from "~/components/post-type-picker";
+import UserTypePicker from "~/components/user-type-picker";
+import { stringInvariant } from "~/utils/invariants";
 
 export const loader: LoaderFunction = async ({ params }) => {
-  invariant(params.slug, "expected params.slug");
+  stringInvariant(params.slug);
   return json(await getPostSource(params.slug));
 };
 
@@ -45,10 +44,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     return json(errors);
   }
 
-  invariant(typeof title === "string");
-  invariant(isValidPostType(type));
-  invariant(typeof markdown === "string");
-  invariant(typeof slug === "string");
+  stringInvariant(title);
+  stringInvariant(type);
+  stringInvariant(markdown);
+  stringInvariant(slug);
 
   await updatePost({
     slug: slug,
@@ -91,9 +90,9 @@ export default function EditPost() {
         </p>
         <p>
           <label className="w-100">
-            Post Type:{" "}
+            User Type:{" "}
             {errors?.title ? <em className="error">Type is required</em> : null}{" "}
-            <PostTypePicker name="type" defaultValue={post.type} />
+            <UserTypePicker name="type" defaultValue={post.type} />
           </label>
         </p>
         <p>
@@ -105,7 +104,7 @@ export default function EditPost() {
           <textarea
             id="markdown"
             className="form-control"
-            rows={20}
+            rows={10}
             name="markdown"
             defaultValue={post.markdown}
           />

@@ -6,24 +6,23 @@ import invariant from "tiny-invariant";
 import { marked } from "marked";
 import { json } from "remix";
 
-export type PostType = "info" | "success" | "warning" | "danger";
 export interface Post {
   slug: string;
   title: string;
-  type: PostType | "";
+  type: string | "";
   html: string;
 }
 
 export interface PostSource {
   slug: string;
   title: string;
-  type: PostType | "";
+  type: string | "";
   markdown: string;
 }
 
 export interface PostMarkdownAttributes {
   title: string;
-  type: PostType | "";
+  type: string | "";
 }
 
 const postsPath = path.join(__dirname, "..", "posts");
@@ -32,23 +31,6 @@ export function isValidPostAttributes(
   attributes: any
 ): attributes is PostMarkdownAttributes {
   return attributes?.title;
-}
-
-export function isValidPostType(type: any): type is PostType {
-  if (typeof type !== "string") {
-    return false;
-  }
-
-  switch (type) {
-    case "":
-    case "info":
-    case "success":
-    case "warn":
-    case "danger":
-      return true;
-  }
-
-  return false;
 }
 
 export async function getPosts(): Promise<Omit<Post, "html">[]> {
@@ -62,10 +44,6 @@ export async function getPosts(): Promise<Omit<Post, "html">[]> {
       invariant(
         isValidPostAttributes(attributes),
         `${filename} has bad meta data!`
-      );
-      invariant(
-        isValidPostType(attributes.type ?? ""),
-        `${filename} has bad post type data!`
       );
 
       return {
@@ -90,10 +68,6 @@ export async function searchPosts(
       invariant(
         isValidPostAttributes(attributes),
         `${filename} has bad meta data!`
-      );
-      invariant(
-        isValidPostType(attributes.type ?? ""),
-        `${filename} has bad post type data!`
       );
 
       return {
@@ -141,10 +115,6 @@ export async function getPost(slug: string): Promise<Post> {
     isValidPostAttributes(attributes),
     `Post ${filepath} is missing attributes`
   );
-  invariant(
-    isValidPostType(attributes.type ?? ""),
-    `${filepath} has bad post type data!`
-  );
 
   const html = marked(body);
   return { slug, title: attributes.title, type: attributes.type, html };
@@ -159,10 +129,6 @@ export async function getPostSource(slug: string): Promise<PostSource> {
     isValidPostAttributes(attributes),
     `Post ${filepath} is missing attributes`
   );
-  invariant(
-    isValidPostType(attributes.type ?? ""),
-    `${filepath} has bad post type data!`
-  );
 
   return {
     slug,
@@ -175,7 +141,7 @@ export async function getPostSource(slug: string): Promise<PostSource> {
 type NewPost = {
   slug: string;
   title: string;
-  type: PostType;
+  type: string;
   markdown: string;
 };
 
@@ -188,7 +154,7 @@ export async function createPost(post: NewPost) {
 type UpdatePost = {
   slug: string;
   title: string;
-  type: PostType;
+  type: string;
   markdown: string;
 };
 

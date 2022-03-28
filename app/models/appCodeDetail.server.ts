@@ -12,9 +12,9 @@ export function getAppCodeDetail({
   });
 }
 
-export function getAppCodeDetailListItems() {
+export function getAppCodeDetailListItems(codeGroup?: string) {
   return prisma.appCodeDetail.findMany({
-    // where: { userId: userId },
+    where: { CodeGroup: codeGroup },
     select: {
       AppCodeDetailId: true,
       CodeGroup: true,
@@ -52,8 +52,11 @@ export function createAppCodeDetail(
 export function updateAppCodeDetail(
   item: Partial<AppCodeDetail> & { AppCodeDetailId: number }
 ) {
-  invariant(item.AppCodeDetailId !== undefined);
-  invariant(item.AppCodeDetailId > 0);
+  invariant(
+    item.AppCodeDetailId !== undefined,
+    `item.AppCodeDetailId must be set`
+  );
+  invariant(item.AppCodeDetailId > 0, `item.AppCodeDetailId must be > 0`);
 
   const { AppCodeDetailId, ...data } = item;
   return prisma.appCodeDetail.update({
@@ -67,7 +70,7 @@ export function deleteAppCodeDetail({
 }: {
   AppCodeDetailId: number;
 }) {
-  invariant(AppCodeDetailId > 0);
+  invariant(AppCodeDetailId > 0, `AppCodeDetailId must be > 0`);
 
   return prisma.appCodeDetail.deleteMany({
     where: { AppCodeDetailId },

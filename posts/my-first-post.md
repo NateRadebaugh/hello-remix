@@ -1,6 +1,6 @@
 ---
 title: My First Post
-type: danger
+type: Standard
 ---
 
 # This is my first post
