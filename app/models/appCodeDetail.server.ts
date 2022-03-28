@@ -28,6 +28,10 @@ export function getAppCodeDetailListItems(codeGroup?: string) {
   });
 }
 
+export async function getUserTypes() {
+  return await getAppCodeDetailListItems("SecurityUser.UserType");
+}
+
 export function createAppCodeDetail(
   item: Omit<
     AppCodeDetail,

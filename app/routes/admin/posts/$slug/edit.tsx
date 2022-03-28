@@ -14,10 +14,21 @@ import { getPostSource } from "~/post";
 import type { PostSource } from "~/post";
 import UserTypePicker from "~/components/user-type-picker";
 import { stringInvariant } from "~/utils/invariants";
+import { getUserTypes } from "~/models/appCodeDetail.server";
+
+interface LoaderData {
+  post: PostSource;
+  initialUserTypeOptions: Awaited<ReturnType<typeof getUserTypes>>;
+}
 
 export const loader: LoaderFunction = async ({ params }) => {
   stringInvariant(params.slug);
-  return json(await getPostSource(params.slug));
+
+  const loaderData: LoaderData = {
+    post: await getPostSource(params.slug),
+    initialUserTypeOptions: await getUserTypes(),
+  };
+  return json(loaderData);
 };
 
 type PostError = {
@@ -62,7 +73,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 export default function EditPost() {
   const errors = useActionData();
   const transition = useTransition();
-  const post = useLoaderData<PostSource>();
+  const { post, initialUserTypeOptions } = useLoaderData<LoaderData>();
 
   return (
     <Form key={post.slug} method="post">
@@ -91,8 +102,12 @@ export default function EditPost() {
         <p>
           <label className="w-100">
             User Type:{" "}
-            {errors?.title ? <em className="error">Type is required</em> : null}{" "}
-            <UserTypePicker name="type" defaultValue={post.type} />
+            {errors?.type ? <em className="error">Type is required</em> : null}{" "}
+            <UserTypePicker
+              name="type"
+              defaultValue={post.type}
+              initialData={initialUserTypeOptions}
+            />
           </label>
         </p>
         <p>

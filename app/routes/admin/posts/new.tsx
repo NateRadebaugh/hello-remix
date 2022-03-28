@@ -5,11 +5,27 @@ import {
   redirect,
   json,
   Link,
+  useLoaderData,
+  LoaderFunction,
 } from "remix";
 import type { ActionFunction } from "remix";
 import { createPost } from "~/post";
 import UserTypePicker from "~/components/user-type-picker";
 import { stringInvariant } from "~/utils/invariants";
+import { getUserTypes } from "~/models/appCodeDetail.server";
+
+interface LoaderData {
+  initialUserTypeOptions: Awaited<ReturnType<typeof getUserTypes>>;
+}
+
+export const loader: LoaderFunction = async ({ params }) => {
+  stringInvariant(params.slug);
+
+  const loaderData: LoaderData = {
+    initialUserTypeOptions: await getUserTypes(),
+  };
+  return json(loaderData);
+};
 
 type PostError = {
   title?: boolean;
@@ -48,6 +64,7 @@ export const action: ActionFunction = async ({ request }) => {
 export default function NewPost() {
   const errors = useActionData();
   const transition = useTransition();
+  const { initialUserTypeOptions } = useLoaderData<LoaderData>();
 
   return (
     <Form method="post">
@@ -72,7 +89,7 @@ export default function NewPost() {
           <label className="w-100">
             User Type:{" "}
             {errors?.title ? <em className="error">Type is required</em> : null}{" "}
-            <UserTypePicker name="type" />
+            <UserTypePicker name="type" initialData={initialUserTypeOptions} />
           </label>
         </p>
         <p>
