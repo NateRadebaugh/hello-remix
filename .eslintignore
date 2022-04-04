@@ -1,0 +1,6 @@
+# don't lint build output (make sure it's set to your correct build folder name)
+.cache
+build
+node_modules
+remix.config.js
+.eslintrc.js

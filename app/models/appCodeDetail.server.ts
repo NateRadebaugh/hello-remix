@@ -54,7 +54,7 @@ export function createAppCodeDetail(
 }
 
 export function updateAppCodeDetail(
-  item: Partial<AppCodeDetail> & { AppCodeDetailId: number }
+  item: Partial<AppCodeDetail> | { AppCodeDetailId: number }
 ) {
   invariant(
     item.AppCodeDetailId !== undefined,

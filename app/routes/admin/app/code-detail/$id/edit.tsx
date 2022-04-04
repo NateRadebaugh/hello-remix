@@ -53,9 +53,9 @@ export const action: ActionFunction = async ({ request, params }) => {
   const errors: SaveError = {};
   if (!codeGroup) errors.CodeGroup = "CodeGroup is required";
   if (!codeValue) errors.CodeValue = "CodeValue is required";
-  if (rawActive === undefined) errors.Active = "Active is required";
-  if (rawIsDefault === undefined) errors.Default = "Default is required";
-  if (rawSort === undefined) errors.Sort = "Sort is required";
+  if (rawActive === null) errors.Active = "Active is required";
+  if (rawIsDefault === null) errors.Default = "Default is required";
+  if (rawSort === null) errors.Sort = "Sort is required";
 
   if (Object.keys(errors).length) {
     return json(errors);
@@ -101,7 +101,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 export default function EditAppCodeDetail() {
   const errors = useActionData<SaveError>();
   const transition = useTransition();
-  const { isEdit, item } = useLoaderData<LoaderData>() ?? {};
+  const { isEdit, item } = useLoaderData<LoaderData | undefined>() ?? {};
 
   return (
     <Form key={item?.AppCodeDetailId} method="post">

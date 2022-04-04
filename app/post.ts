@@ -28,9 +28,17 @@ export interface PostMarkdownAttributes {
 const postsPath = path.join(__dirname, "..", "posts");
 
 export function isValidPostAttributes(
-  attributes: any
+  attributes:
+    | Record<string, unknown>
+    | PostMarkdownAttributes
+    | null
+    | undefined
 ): attributes is PostMarkdownAttributes {
-  return attributes?.title;
+  if (attributes?.title) {
+    return true;
+  }
+
+  return false;
 }
 
 export async function getPosts(): Promise<Omit<Post, "html">[]> {
@@ -38,7 +46,7 @@ export async function getPosts(): Promise<Omit<Post, "html">[]> {
   return Promise.all(
     dir.map(async (filename) => {
       const file = await fs.readFile(path.join(postsPath, filename));
-      const { attributes } = parseFrontMatter<PostMarkdownAttributes>(
+      const { attributes } = parseFrontMatter<Record<string, unknown>>(
         file.toString()
       );
       invariant(
@@ -110,7 +118,9 @@ export async function searchPostTypes(q: string | undefined) {
 export async function getPost(slug: string): Promise<Post> {
   const filepath = path.join(postsPath, slug + ".md");
   const file = await fs.readFile(filepath);
-  const { attributes, body } = parseFrontMatter(file.toString());
+  const { attributes, body } = parseFrontMatter<PostMarkdownAttributes>(
+    file.toString()
+  );
   invariant(
     isValidPostAttributes(attributes),
     `Post ${filepath} is missing attributes`
@@ -123,7 +133,9 @@ export async function getPost(slug: string): Promise<Post> {
 export async function getPostSource(slug: string): Promise<PostSource> {
   const filepath = path.join(postsPath, slug + ".md");
   const file = await fs.readFile(filepath);
-  const { attributes, body } = parseFrontMatter(file.toString());
+  const { attributes, body } = parseFrontMatter<PostMarkdownAttributes>(
+    file.toString()
+  );
 
   invariant(
     isValidPostAttributes(attributes),

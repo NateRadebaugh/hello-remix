@@ -12,7 +12,7 @@ export default function Index() {
           App
           <ul>
             <li>
-              <Link to="/app/code-detail">Code Detail</Link>
+              <Link to="/admin/app/code-detail">Code Detail</Link>
             </li>
           </ul>
         </li>

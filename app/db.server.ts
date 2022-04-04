@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { PrismaClient } from "@prisma/client";
 
 let prisma: PrismaClient;
 
 declare global {
+  // eslint-disable-next-line no-var
   var __db__: PrismaClient;
 }
 

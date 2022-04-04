@@ -19,8 +19,6 @@ interface LoaderData {
 }
 
 export const loader: LoaderFunction = async ({ params }) => {
-  stringInvariant(params.slug);
-
   const loaderData: LoaderData = {
     initialUserTypeOptions: await getUserTypes(),
   };
@@ -62,7 +60,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function NewPost() {
-  const errors = useActionData();
+  const errors = useActionData<PostError>();
   const transition = useTransition();
   const { initialUserTypeOptions } = useLoaderData<LoaderData>();
 

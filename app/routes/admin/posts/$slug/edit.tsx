@@ -71,7 +71,7 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export default function EditPost() {
-  const errors = useActionData();
+  const errors = useActionData<PostError>();
   const transition = useTransition();
   const { post, initialUserTypeOptions } = useLoaderData<LoaderData>();
 
