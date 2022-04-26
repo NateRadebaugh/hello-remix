@@ -3,7 +3,7 @@ import fs from "fs/promises";
 import parseFrontMatter from "front-matter";
 import invariant from "tiny-invariant";
 import { marked } from "marked";
-import { json } from "remix";
+import { json } from "@remix-run/node";
 
 export type Post = {
   slug: string;
