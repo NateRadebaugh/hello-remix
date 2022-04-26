@@ -1,15 +1,7 @@
-import {
-  json,
-  Links,
-  LiveReload,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-  useLoaderData,
-} from "remix";
+import type { LoaderFunction, MetaFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useLoaderData } from "@remix-run/react";
 import bootstrapStyles from "bootstrap/dist/css/bootstrap.css";
-import type { MetaFunction, LoaderFunction } from "remix";
 import Footer from "~/layout/footer";
 import Header from "~/layout/header";
 
