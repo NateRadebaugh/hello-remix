@@ -1,5 +1,6 @@
 ---
 title: Test Title
+type: Special
 ---
 
 # This is a Test

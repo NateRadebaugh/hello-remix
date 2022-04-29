@@ -1,23 +1,20 @@
-import { json } from "@remix-run/node";
+import { json, LoaderFunction } from "@remix-run/node";
 import { Link, Outlet, useLoaderData } from "@remix-run/react";
 
 import { getPosts } from "~/post";
 import type { Post } from "~/post";
-import adminStyles from "~/styles/admin.css";
+import { requireUserSession } from "~/session";
 
-export const links = () => {
-  return [{ rel: "stylesheet", href: adminStyles }];
-};
-
-export const loader = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
+  const session = await requireUserSession(request);
   return json(await getPosts());
 };
 
 export default function Admin() {
   const posts = useLoaderData<Post[]>();
   return (
-    <div className="admin">
-      <nav>
+    <div className="row">
+      <nav className="col-auto" style={{ width: "180px" }}>
         <h1>Admin</h1>
         <ul>
           {posts.map((post) => (
@@ -28,7 +25,7 @@ export default function Admin() {
         </ul>
       </nav>
 
-      <div>
+      <div className="col">
         <Outlet />
       </div>
     </div>

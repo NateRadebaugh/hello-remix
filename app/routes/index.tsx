@@ -1,4 +1,11 @@
+import { json, LoaderFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+import { requireUserSession } from "~/session";
+
+export const loader: LoaderFunction = async ({ request }) => {
+  const session = await requireUserSession(request);
+  return null;
+};
 
 export default function Index() {
   return (
@@ -7,14 +14,6 @@ export default function Index() {
       <ul>
         <li>
           <Link to="/posts">Posts</Link>
-        </li>
-        <li>
-          App
-          <ul>
-            <li>
-              <Link to="/admin/app/code-detail">Code Detail</Link>
-            </li>
-          </ul>
         </li>
         <li>
           <a target="_blank" href="https://remix.run/docs" rel="noreferrer">

@@ -16,14 +16,6 @@ export default function Footer({ year }: FooterProps) {
           </Link>
         </li>
         <li className="nav-item">
-          <Link
-            to="/admin/app/code-detail"
-            className="nav-link px-2 text-muted"
-          >
-            App Code Detail
-          </Link>
-        </li>
-        <li className="nav-item">
           <Link to="/admin/posts" className="nav-link px-2 text-muted">
             Posts
           </Link>

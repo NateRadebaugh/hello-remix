@@ -1,16 +1,16 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { getAppCodeDetailListItems } from "~/models/appCodeDetail.server";
+import { getSecurityUserListItems } from "~/models/securityUser.server";
 import { requireUserSession } from "~/session";
 
 type LoaderData = {
-  items: Awaited<ReturnType<typeof getAppCodeDetailListItems>>;
+  items: Awaited<ReturnType<typeof getSecurityUserListItems>>;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   const session = await requireUserSession(request);
-  const items = await getAppCodeDetailListItems(session);
+  const items = await getSecurityUserListItems(session);
   return json<LoaderData>({ items });
 };
 
@@ -20,7 +20,7 @@ export default function Index() {
   return (
     <div>
       <div className="d-flex align-items-center justify-content-between">
-        <h1>App Code Detail</h1>
+        <h1>Security User</h1>
         <div>
           <Link to="new" className="btn btn-primary">
             New
@@ -33,30 +33,24 @@ export default function Index() {
           <tr>
             {/* Tablet/Desktop */}
             <th scope="col" className="d-none d-md-table-cell">
-              Group
+              Name
             </th>
             <th scope="col" className="d-none d-md-table-cell">
-              Value
+              Username
             </th>
             <th scope="col" className="d-none d-md-table-cell">
-              Sort
-            </th>
-            <th scope="col" className="d-none d-md-table-cell">
-              Description
+              Email Address
             </th>
             <th scope="col" className="d-none d-md-table-cell">
               Active
             </th>
             <th scope="col" className="d-none d-md-table-cell">
-              Default
-            </th>
-            <th scope="col" className="d-none d-md-table-cell">
-              Actions
+              Roles
             </th>
 
             {/* Mobile */}
             <th scope="col" className="d-table-cell d-md-none">
-              Code Detail
+              Security User
             </th>
             <th scope="col" className="d-table-cell d-md-none">
               Actions
@@ -65,40 +59,56 @@ export default function Index() {
         </thead>
         <tbody>
           {items.map((item) => (
-            <tr key={item.AppCodeDetailId}>
+            <tr key={item.SecurityUserId}>
               {/* Tablet/Desktop */}
               <td scope="row" className="d-none d-md-table-cell">
-                {item.CodeGroup}
+                {item.FirstName} {item.LastName}
               </td>
-              <td className="d-none d-md-table-cell">{item.CodeValue}</td>
-              <td className="d-none d-md-table-cell">{item.Sort}</td>
-              <td className="d-none d-md-table-cell">{item.Description}</td>
+              <td className="d-none d-md-table-cell">
+                {item.UserName || "---"}
+              </td>
+              <td className="d-none d-md-table-cell">
+                {item.EmailAddress || "---"}
+              </td>
               <td className="d-none d-md-table-cell">
                 {item.Active ? "yes" : "no"}
               </td>
               <td className="d-none d-md-table-cell">
-                {item.Default ? "yes" : "no"}
+                {item.SecurityUserRoleMembership.length > 0
+                  ? item.SecurityUserRoleMembership.map((x) =>
+                      x.SecurityRole.ADGroupName
+                        ? `${x.SecurityRole.Name} (ADGroup: ${x.SecurityRole.ADGroupName})`
+                        : x.SecurityRole.Name
+                    )
+                  : "---"}
               </td>
 
               {/* Mobile */}
               <td scope="row" className="d-table-cell d-md-none">
-                <h4 className="mb-0">Code Group: {item.CodeGroup}</h4>
-                <strong>Code Value:</strong> {item.CodeValue}
+                <h4 className="mb-0">
+                  {item.FirstName} {item.LastName}
+                </h4>
+                <strong>UserName:</strong> {item.UserName || "---"}
                 <br />
-                <strong>Sort:</strong> {item.Sort}
+                <strong>EmailAddress:</strong> {item.EmailAddress || "---"}
                 <br />
-                <strong>Description:</strong> {item.Description}
+                <strong>Active:</strong> {item.Active ? "yes" : "no"}
                 <br />
-                <strong>Active?</strong> {item.Active ? "yes" : "no"}
-                <br />
-                <strong>Default?</strong> {item.Default ? "yes" : "no"}
+                <strong>Roles:</strong>{" "}
+                {item.SecurityUserRoleMembership.length > 0
+                  ? item.SecurityUserRoleMembership.map((x) =>
+                      x.SecurityRole.ADGroupName
+                        ? `${x.SecurityRole.Name} (ADGroup: ${x.SecurityRole.ADGroupName})`
+                        : x.SecurityRole.Name
+                    )
+                  : "---"}
               </td>
 
               <td>
-                <Link to={`${item.AppCodeDetailId}/edit`}>Edit</Link>
+                <Link to={`${item.SecurityUserId}/edit`}>Edit</Link>
                 <br />
                 <Link
-                  to={`${item.AppCodeDetailId}/delete`}
+                  to={`${item.SecurityUserId}/delete`}
                   className="text-danger"
                   onClick={(e) => {
                     if (!confirm("Are you sure?")) {

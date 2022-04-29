@@ -13,18 +13,20 @@ import type { PostSource } from "~/post";
 import UserTypePicker from "~/components/user-type-picker";
 import { stringInvariant } from "~/utils/invariants";
 import { getUserTypes } from "~/models/appCodeDetail.server";
+import { requireUserSession } from "~/session";
 
 interface LoaderData {
   post: PostSource;
   initialUserTypeOptions: Awaited<ReturnType<typeof getUserTypes>>;
 }
 
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const session = await requireUserSession(request);
   stringInvariant(params.slug);
 
   const loaderData: LoaderData = {
     post: await getPostSource(params.slug),
-    initialUserTypeOptions: await getUserTypes(),
+    initialUserTypeOptions: await getUserTypes(session),
   };
   return json(loaderData);
 };

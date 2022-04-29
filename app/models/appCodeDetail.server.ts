@@ -1,18 +1,27 @@
 import type { AppCodeDetail } from "@prisma/client";
 import invariant from "tiny-invariant";
 import { prisma } from "~/db.server";
+import { Session } from "~/session";
 
-export function getAppCodeDetail({
-  AppCodeDetailId,
-}: {
-  AppCodeDetailId: number;
-}) {
+export function getAppCodeDetail(
+  session: Session,
+  {
+    AppCodeDetailId,
+  }: {
+    AppCodeDetailId: number;
+  }
+) {
+  invariant(session);
   return prisma.appCodeDetail.findFirst({
     where: { AppCodeDetailId },
   });
 }
 
-export function getAppCodeDetailListItems(codeGroup?: string) {
+export function getAppCodeDetailListItems(
+  session: Session,
+  codeGroup?: string
+) {
+  invariant(session);
   return prisma.appCodeDetail.findMany({
     where: { CodeGroup: codeGroup },
     select: {
@@ -28,11 +37,12 @@ export function getAppCodeDetailListItems(codeGroup?: string) {
   });
 }
 
-export async function getUserTypes() {
-  return await getAppCodeDetailListItems("SecurityUser.UserType");
+export async function getUserTypes(session: Session) {
+  return await getAppCodeDetailListItems(session, "SecurityUser.UserType");
 }
 
 export function createAppCodeDetail(
+  session: Session,
   item: Omit<
     AppCodeDetail,
     | "AppCodeDetailId"
@@ -54,6 +64,7 @@ export function createAppCodeDetail(
 }
 
 export function updateAppCodeDetail(
+  session: Session,
   item: Partial<AppCodeDetail> | { AppCodeDetailId: number }
 ) {
   invariant(
@@ -69,11 +80,12 @@ export function updateAppCodeDetail(
   });
 }
 
-export function deleteAppCodeDetail({
+export function deleteAppCodeDetail(session: Session, {
   AppCodeDetailId,
 }: {
   AppCodeDetailId: number;
 }) {
+  invariant(session);
   invariant(AppCodeDetailId > 0, `AppCodeDetailId must be > 0`);
 
   return prisma.appCodeDetail.deleteMany({

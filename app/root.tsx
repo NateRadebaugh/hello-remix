@@ -1,4 +1,9 @@
-import type { LoaderFunction, MetaFunction } from "@remix-run/node";
+import {
+  ActionFunction,
+  LoaderFunction,
+  MetaFunction,
+  redirect,
+} from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -15,6 +20,7 @@ import Footer from "~/layout/footer";
 import Header from "~/layout/header";
 
 import bootstrapStyles from "bootstrap/dist/css/bootstrap.css";
+import { destroySession, getUserSession } from "./session";
 
 const queryClient = new QueryClient();
 
@@ -30,19 +36,21 @@ export const links = () => {
 
 type LoaderData = Awaited<ReturnType<typeof getLoaderData>>;
 
-async function getLoaderData() {
+async function getLoaderData(request: Request) {
+  const session = await getUserSession(request);
   const year = new Date().getFullYear();
   return {
     year: year,
+    session: session?.data,
   };
 }
 
-export const loader: LoaderFunction = async () => {
-  return json(await getLoaderData());
+export const loader: LoaderFunction = async ({ request }) => {
+  return json(await getLoaderData(request));
 };
 
 export default function App() {
-  const { year } = useLoaderData<LoaderData>();
+  const { session, year } = useLoaderData<LoaderData>();
   return (
     <QueryClientProvider client={queryClient}>
       <html lang="en">
@@ -51,13 +59,25 @@ export default function App() {
           <Links />
         </head>
         <body>
-          <Header />
+          {!session.securityUser ? (
+            <>
+              <div className="row">
+                <div className="col-sm-10 col-md-8 col-lg-6 col-xl-4 col-xxl-3 border p-3 mx-auto mt-5">
+                  <Outlet />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <Header session={session} />
 
-          <main className="container-fluid">
-            <Outlet />
-          </main>
+              <main className="container-fluid">
+                <Outlet />
+              </main>
 
-          <Footer year={year} />
+              <Footer year={year} />
+            </>
+          )}
 
           <ScrollRestoration />
           <Scripts />

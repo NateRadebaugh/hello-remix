@@ -11,14 +11,16 @@ import { createPost } from "~/post";
 import UserTypePicker from "~/components/user-type-picker";
 import { stringInvariant } from "~/utils/invariants";
 import { getUserTypes } from "~/models/appCodeDetail.server";
+import { requireUserSession } from "~/session";
 
 interface LoaderData {
   initialUserTypeOptions: Awaited<ReturnType<typeof getUserTypes>>;
 }
 
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader: LoaderFunction = async ({ request, params }) => {
+  const session = await requireUserSession(request);
   const loaderData: LoaderData = {
-    initialUserTypeOptions: await getUserTypes(),
+    initialUserTypeOptions: await getUserTypes(session),
   };
   return json(loaderData);
 };
