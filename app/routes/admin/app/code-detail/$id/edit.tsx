@@ -1,13 +1,6 @@
-import {
-  Form,
-  json,
-  Link,
-  redirect,
-  useActionData,
-  useLoaderData,
-  useTransition,
-} from "remix";
-import type { LoaderFunction, ActionFunction } from "remix";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { Form, Link, useActionData, useLoaderData, useTransition } from "@remix-run/react";
 import invariant from "tiny-invariant";
 import {
   AppCodeDetail,

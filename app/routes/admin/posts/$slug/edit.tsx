@@ -1,14 +1,6 @@
-import {
-  useTransition,
-  useActionData,
-  Form,
-  redirect,
-  json,
-  LoaderFunction,
-  useLoaderData,
-  Link,
-} from "remix";
-import type { ActionFunction } from "remix";
+import type { ActionFunction } from "@remix-run/node";
+import { json, LoaderFunction, redirect } from "@remix-run/node";
+import { Form, Link, useActionData, useLoaderData, useTransition } from "@remix-run/react";
 import { updatePost } from "~/post";
 import { getPostSource } from "~/post";
 import type { PostSource } from "~/post";

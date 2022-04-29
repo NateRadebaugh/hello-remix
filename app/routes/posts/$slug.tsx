@@ -1,5 +1,6 @@
-import { json, Link, useLoaderData } from "remix";
-import type { LoaderFunction } from "remix";
+import type { LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
 import { getPost } from "~/post";
 import type { Post } from "~/post";
 import { stringInvariant } from "~/utils/invariants";

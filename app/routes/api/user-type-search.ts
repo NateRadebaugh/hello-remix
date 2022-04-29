@@ -1,4 +1,4 @@
-import { json, LoaderFunction } from "remix";
+import { json, LoaderFunction } from "@remix-run/node";
 import { getAppCodeDetailListItems } from "~/models/appCodeDetail.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
