@@ -1,5 +1,5 @@
 import { useQuery } from "react-query";
-import { getUserTypes } from "~/models/appCodeDetail.server";
+import type { getUserTypes } from "~/models/appCodeDetail.server";
 
 export interface PostTypePickerProps {
   name: string;

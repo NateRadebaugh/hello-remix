@@ -1,4 +1,4 @@
-import { AppCodeDetail } from "@prisma/client";
+import type { AppCodeDetail } from "@prisma/client";
 import invariant from "tiny-invariant";
 import { prisma } from "~/db.server";
 

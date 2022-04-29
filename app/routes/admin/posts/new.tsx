@@ -1,6 +1,12 @@
-import type { ActionFunction } from "@remix-run/node";
-import { json, LoaderFunction, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useLoaderData, useTransition } from "@remix-run/react";
+import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import {
+  Form,
+  Link,
+  useActionData,
+  useLoaderData,
+  useTransition,
+} from "@remix-run/react";
 import { createPost } from "~/post";
 import UserTypePicker from "~/components/user-type-picker";
 import { stringInvariant } from "~/utils/invariants";
