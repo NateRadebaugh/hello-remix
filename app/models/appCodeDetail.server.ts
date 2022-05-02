@@ -17,28 +17,28 @@ export function getAppCodeDetail(
   });
 }
 
+export type WhereType = NonNullable<
+  Parameters<typeof prisma.appCodeDetail.findMany>["0"]
+>["where"];
+
+export type SelectType = NonNullable<
+  Parameters<typeof prisma.appCodeDetail.findMany>["0"]
+>["select"];
+
 export function getAppCodeDetailListItems(
   session: Session,
-  codeGroup?: string
+  arg: Parameters<typeof prisma.appCodeDetail.findMany>["0"]
 ) {
   invariant(session);
-  return prisma.appCodeDetail.findMany({
-    where: { CodeGroup: codeGroup },
-    select: {
-      AppCodeDetailId: true,
-      CodeGroup: true,
-      CodeValue: true,
-      Description: true,
-      Default: true,
-      Active: true,
-      Sort: true,
-    },
-    orderBy: [{ CodeGroup: "asc" }, { Sort: "asc" }, { ModifyDate: "desc" }],
-  });
+  return prisma.appCodeDetail.findMany(arg);
 }
 
 export async function getUserTypes(session: Session) {
-  return await getAppCodeDetailListItems(session, "SecurityUser.UserType");
+  return await getAppCodeDetailListItems(session, {
+    where: {
+      CodeGroup: "SecurityUser.UserType",
+    },
+  });
 }
 
 export function createAppCodeDetail(
@@ -80,11 +80,14 @@ export function updateAppCodeDetail(
   });
 }
 
-export function deleteAppCodeDetail(session: Session, {
-  AppCodeDetailId,
-}: {
-  AppCodeDetailId: number;
-}) {
+export function deleteAppCodeDetail(
+  session: Session,
+  {
+    AppCodeDetailId,
+  }: {
+    AppCodeDetailId: number;
+  }
+) {
   invariant(session);
   invariant(AppCodeDetailId > 0, `AppCodeDetailId must be > 0`);
 
