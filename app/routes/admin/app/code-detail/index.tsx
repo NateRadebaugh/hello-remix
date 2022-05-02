@@ -24,7 +24,9 @@ function getAppCodeDetailListItems(session: Session, where: WhereType) {
 }
 
 type Unarray<T> = T extends (infer U)[] ? U : T;
-type DropdownItem = Unarray<Awaited<ReturnType<typeof getAppCodeDetailListItems>>>;
+type DropdownItem = Unarray<
+  Awaited<ReturnType<typeof getAppCodeDetailListItems>>
+>;
 
 type LoaderData = {
   items: DropdownItem[];
@@ -33,11 +35,15 @@ type LoaderData = {
 type IFormData = {
   group?: string;
   value?: string;
+  description?: string;
+  includeInactive?: "on";
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
   const session = await requireUserSession(request);
-  const items = await getAppCodeDetailListItems(session, {});
+  const items = await getAppCodeDetailListItems(session, {
+    Active: true,
+  });
   return json<LoaderData>({ items });
 };
 
@@ -48,8 +54,12 @@ interface TypedFormData<TFormData> {
     fileName?: string
   ): void;
   delete(name: keyof TFormData): void;
-  get(name: keyof TFormData): FormDataEntryValue | null;
-  getAll(name: keyof TFormData): FormDataEntryValue[];
+  get<TField extends keyof TFormData>(
+    name: keyof TFormData
+  ): TFormData[TField] | null;
+  getAll<TField extends keyof TFormData>(
+    name: keyof TFormData
+  ): TFormData[TField][];
   has(name: keyof TFormData): boolean;
   set<TField extends keyof TFormData>(
     name: TField,
@@ -70,7 +80,7 @@ function typedFormData<TFormData>(
   formData: FormData
 ): TypedFormData<TFormData> {
   const typed = formData;
-  return typed as TypedFormData<TFormData>;
+  return typed as unknown as TypedFormData<TFormData>;
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -89,6 +99,21 @@ export const action: ActionFunction = async ({ request, params }) => {
   if (value) {
     where.CodeValue = {
       contains: value.toString(),
+    };
+  }
+
+  const description = formData.get("description");
+  if (description) {
+    where.Description = {
+      contains: description.toString(),
+    };
+  }
+
+  const includeInactive = formData.get("includeInactive");
+  console.log({ includeInactive });
+  if (includeInactive !== "on") {
+    where.Active = {
+      equals: true,
     };
   }
 
@@ -125,8 +150,8 @@ export default function Index() {
           </div>
           <div className="p-3">
             <div className="row align-items-end">
-              <div className="col-md-3">
-                <label className="w-100">
+              <div className="col-sm-6 col-md-3">
+                <label className="w-100 mb-3">
                   Group:
                   <StandardDropdown<DropdownItem>
                     name="group"
@@ -141,17 +166,34 @@ export default function Index() {
                   />
                 </label>
               </div>
-              <div className="col-md-3">
-                <label>
+              <div className="col-sm-6 col-md-3">
+                <label className="w-100 mb-3">
                   Value:
                   <input type="text" name="value" className="form-control" />
                 </label>
               </div>
+              <div className="col-sm-6 col-md-3">
+                <label className="w-100 mb-3">
+                  Description:
+                  <input
+                    type="text"
+                    name="description"
+                    className="form-control"
+                  />
+                </label>
+              </div>
+              <div className="col-sm-6 col-md-3">
+                <label className="w-100 mb-3">
+                  Include Inactive:
+                  <br />
+                  <input type="checkbox" name="includeInactive" />
+                </label>
+              </div>
 
-              <div className="col-auto d-flex flex-row-reverse">
-                <button className="btn btn-primary">Search</button>
+              <div className="col-auto ms-auto d-flex flex-row-reverse">
+                <button className="btn btn-primary mb-1">Search</button>
                 <button
-                  className="btn btn-secondary me-1"
+                  className="btn btn-secondary mb-1 me-1"
                   onClick={() => ref.current?.reset()}
                 >
                   Clear

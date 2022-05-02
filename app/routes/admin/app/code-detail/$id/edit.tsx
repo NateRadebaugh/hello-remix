@@ -55,8 +55,6 @@ export const action: ActionFunction = async ({ request, params }) => {
   const errors: SaveError = {};
   if (!codeGroup) errors.CodeGroup = "CodeGroup is required";
   if (!codeValue) errors.CodeValue = "CodeValue is required";
-  if (rawActive === null) errors.Active = "Active is required";
-  if (rawIsDefault === null) errors.Default = "Default is required";
   if (rawSort === null) errors.Sort = "Sort is required";
 
   if (Object.keys(errors).length) {
