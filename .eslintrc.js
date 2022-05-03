@@ -52,6 +52,8 @@ module.exports = {
     "@typescript-eslint/no-invalid-this": "error",
     "@typescript-eslint/dot-notation": "warn",
     "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/consistent-type-imports": "off",
     "no-empty-pattern": "off",
     "no-extra-semi": "warn",
     "no-unreachable": "off",
@@ -59,5 +61,7 @@ module.exports = {
     "no-shadow": "off",
     "no-empty": "off",
     "@typescript-eslint/no-shadow": "warn",
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/no-empty-function": "off",
   },
 };
