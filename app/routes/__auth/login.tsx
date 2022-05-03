@@ -1,9 +1,10 @@
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useTransition } from "@remix-run/react";
 import clsx from "clsx";
 import { authenticateSecurityUser } from "~/models/securityUser.server";
 import { commitSession, getUserSession } from "~/session";
+import { ActionFunction } from "~/utils/types";
 
 // TODO: remove fake timeout
 function sleep(timeout: number): Promise<void> {
@@ -50,10 +51,13 @@ function ValidationMessage({
   );
 }
 
-export const action: ActionFunction = async ({ request }) => {
+export const action: ActionFunction<ActionDataValues> = async ({ request }) => {
   await sleep(1_000);
   const formData = await request.formData();
-  const values = Object.fromEntries(formData) as unknown as ActionDataValues;
+  const values: ActionDataValues = {
+    email: formData.get("email") ?? "",
+    password: formData.get("password") ?? "",
+  };
 
   const errors: ActionDataErrors = {
     email: undefined,

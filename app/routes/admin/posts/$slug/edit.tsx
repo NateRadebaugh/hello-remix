@@ -1,4 +1,4 @@
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -14,6 +14,7 @@ import UserTypePicker from "~/components/user-type-picker";
 import { stringInvariant } from "~/utils/invariants";
 import { getUserTypes } from "~/models/appCodeDetail.server";
 import { requireUserSession } from "~/session";
+import { ActionFunction } from "~/utils/types";
 
 interface LoaderData {
   post: PostSource;
@@ -31,6 +32,13 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   return json(loaderData);
 };
 
+type PostData = {
+  title?: string;
+  slug?: string;
+  type?: string;
+  markdown?: string;
+}
+
 type PostError = {
   title?: string;
   slug?: string;
@@ -38,7 +46,7 @@ type PostError = {
   markdown?: string;
 };
 
-export const action: ActionFunction = async ({ request, params }) => {
+export const action: ActionFunction<PostData> = async ({ request, params }) => {
   const formData = await request.formData();
 
   const title = formData.get("title");

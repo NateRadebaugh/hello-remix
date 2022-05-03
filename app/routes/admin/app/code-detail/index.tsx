@@ -1,4 +1,4 @@
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useFetcher } from "@remix-run/react";
 import { useEffect, useRef } from "react";
@@ -7,6 +7,7 @@ import { getAppCodeDetailListItems as rawGetAppCodeDetailListItems } from "~/mod
 import type { Session } from "~/session";
 import { getUserSession, requireUserSession } from "~/session";
 import type { WhereType } from "~/models/appCodeDetail.server";
+import type { ActionFunction, Unarray } from "~/utils/types";
 
 function getAppCodeDetailListItems(session: Session, where: WhereType) {
   return rawGetAppCodeDetailListItems(session, {
@@ -23,7 +24,6 @@ function getAppCodeDetailListItems(session: Session, where: WhereType) {
   });
 }
 
-type Unarray<T> = T extends (infer U)[] ? U : T;
 type DropdownItem = Unarray<
   Awaited<ReturnType<typeof getAppCodeDetailListItems>>
 >;
@@ -44,48 +44,12 @@ export const loader: LoaderFunction = async ({ request }) => {
   const items = await getAppCodeDetailListItems(session, {
     Active: true,
   });
-  return json<LoaderData>({ items });
+  return json<LoaderData>({ items: items });
 };
 
-interface TypedFormData<TFormData> {
-  append<TField extends keyof TFormData>(
-    name: TField,
-    value: TFormData[TField] | Blob,
-    fileName?: string
-  ): void;
-  delete(name: keyof TFormData): void;
-  get<TField extends keyof TFormData>(
-    name: keyof TFormData
-  ): TFormData[TField] | null;
-  getAll<TField extends keyof TFormData>(
-    name: keyof TFormData
-  ): TFormData[TField][];
-  has(name: keyof TFormData): boolean;
-  set<TField extends keyof TFormData>(
-    name: TField,
-    value: TFormData[TField] | Blob,
-    fileName?: string
-  ): void;
-  forEach(
-    callbackfn: (
-      value: FormDataEntryValue,
-      key: string,
-      parent: FormData
-    ) => void,
-    thisArg?: unknown
-  ): void;
-}
-
-function typedFormData<TFormData>(
-  formData: FormData
-): TypedFormData<TFormData> {
-  const typed = formData;
-  return typed as unknown as TypedFormData<TFormData>;
-}
-
-export const action: ActionFunction = async ({ request, params }) => {
+export const action: ActionFunction<IFormData> = async ({ request, params }) => {
   const session = await getUserSession(request);
-  const formData = typedFormData<IFormData>(await request.formData());
+  const formData = await request.formData();
 
   const where: WhereType = {};
   const group = formData.get("group");

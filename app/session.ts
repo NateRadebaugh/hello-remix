@@ -1,7 +1,7 @@
-import { SecurityUser } from "@prisma/client";
 import type { Session as RawSession } from "@remix-run/node";
 import { createCookieSessionStorage, redirect } from "@remix-run/node";
-import { authenticateSecurityUser } from "./models/securityUser.server";
+import type { authenticateSecurityUser } from "./models/securityUser.server";
+import type { TypedRequest } from "./utils/types";
 
 // somewhere you've got a session storage
 const {
@@ -36,7 +36,7 @@ export interface Session extends Omit<RawSession, "data" | "get" | "set"> {
   set: <T extends keyof SessionData>(name: T, newValue: SessionData[T]) => void;
 }
 
-export async function getUserSession(request: Request): Promise<Session> {
+export async function getUserSession(request: TypedRequest): Promise<Session> {
   // get the session
   const cookie = request.headers.get("cookie");
   const session = await getSession(cookie);
@@ -44,7 +44,7 @@ export async function getUserSession(request: Request): Promise<Session> {
   return session as Session;
 }
 
-export async function requireUserSession(request: Request): Promise<Session> {
+export async function requireUserSession(request: TypedRequest): Promise<Session> {
   // get the session
   const session = await getUserSession(request);
 

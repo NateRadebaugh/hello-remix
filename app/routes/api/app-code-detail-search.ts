@@ -1,7 +1,6 @@
 import { prisma } from "~/db.server";
 import type { DataFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { getAppCodeDetailListItems } from "~/models/appCodeDetail.server";
 import { requireUserSession } from "~/session";
 
 export async function loader({ request }: DataFunctionArgs) {

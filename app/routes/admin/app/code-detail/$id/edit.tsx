@@ -1,4 +1,4 @@
-import type { ActionFunction, LoaderFunction } from "@remix-run/node";
+import type { LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -17,6 +17,7 @@ import {
 import { getUserSession, requireUserSession } from "~/session";
 import { stringInvariant } from "~/utils/invariants";
 import { parseCheckbox, parseInt } from "~/utils/parse";
+import { ActionFunction } from "~/utils/types";
 
 interface LoaderData {
   isEdit: boolean;
@@ -40,7 +41,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 type SaveError = Partial<Record<keyof AppCodeDetail, string>>;
 
-export const action: ActionFunction = async ({ request, params }) => {
+export const action: ActionFunction<AppCodeDetail> = async ({ request, params }) => {
   const session = await getUserSession(request);
   const formData = await request.formData();
 
