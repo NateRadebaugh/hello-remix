@@ -68,15 +68,15 @@ export default function App() {
               </div>
             </>
           ) : (
-            <>
+            <div className="d-flex flex-column min-vh-100">
               <Header session={session} />
 
-              <main className="container-fluid">
+              <main className="col container">
                 <Outlet />
               </main>
 
               <Footer year={year} />
-            </>
+            </div>
           )}
 
           <ScrollRestoration />
