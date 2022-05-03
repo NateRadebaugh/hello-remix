@@ -1,15 +1,30 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useFetcher } from "@remix-run/react";
-import { useEffect, useRef } from "react";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { useRef } from "react";
 import StandardDropdown from "~/components/standard-dropdown";
 import { getAppCodeDetailListItems as rawGetAppCodeDetailListItems } from "~/models/appCodeDetail.server";
 import type { Session } from "~/session";
 import { getUserSession, requireUserSession } from "~/session";
-import type { WhereType } from "~/models/appCodeDetail.server";
 import type { ActionFunction, Unarray } from "~/utils/types";
+import StandardTextInput from "~/components/standard-text-input";
+import StandardCheckbox from "~/components/standard-checkbox";
+import type { Prisma } from "@prisma/client";
+import StandardFieldWrapper from "~/components/standard-field-wrapper";
 
-function getAppCodeDetailListItems(session: Session, where: WhereType) {
+// TODO: remove fake timeout
+function sleep(timeout: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+    }, timeout);
+  });
+}
+
+function getAppCodeDetailListItems(
+  session: Session,
+  where: Prisma.AppCodeDetailWhereInput
+) {
   return rawGetAppCodeDetailListItems(session, {
     select: {
       AppCodeDetailId: true,
@@ -47,11 +62,14 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json<LoaderData>({ items: items });
 };
 
-export const action: ActionFunction<IFormData> = async ({ request, params }) => {
+export const action: ActionFunction<IFormData> = async ({
+  request,
+  params,
+}) => {
   const session = await getUserSession(request);
   const formData = await request.formData();
 
-  const where: WhereType = {};
+  const where: Prisma.AppCodeDetailWhereInput = {};
   const group = formData.get("group");
   if (group) {
     where.CodeGroup = {
@@ -88,13 +106,9 @@ export const action: ActionFunction<IFormData> = async ({ request, params }) => 
 
 export default function Index() {
   const ref = useRef<HTMLFormElement | null>(null);
+  const initialData = useLoaderData<LoaderData>();
   const fetcher = useFetcher<LoaderData>();
-  const { data: { items = [] } = {} } = fetcher;
-
-  useEffect(() => {
-    fetcher.submit({});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const items = fetcher.data?.items ?? initialData.items;
 
   return (
     <div>
@@ -115,9 +129,8 @@ export default function Index() {
           <div className="p-3">
             <div className="row align-items-end">
               <div className="col-sm-6 col-md-3">
-                <label className="w-100 mb-3">
-                  Group:
-                  <StandardDropdown<DropdownItem>
+                <StandardFieldWrapper<IFormData> label="Group:">
+                  <StandardDropdown<IFormData, DropdownItem>
                     name="group"
                     initialData={[]}
                     fetcher={() =>
@@ -128,30 +141,22 @@ export default function Index() {
                     labelField="CodeGroup"
                     valueField="CodeGroup"
                   />
-                </label>
+                </StandardFieldWrapper>
               </div>
               <div className="col-sm-6 col-md-3">
-                <label className="w-100 mb-3">
-                  Value:
-                  <input type="text" name="value" className="form-control" />
-                </label>
+                <StandardFieldWrapper<IFormData> label="Value:">
+                  <StandardTextInput<IFormData> name="value" />
+                </StandardFieldWrapper>
               </div>
               <div className="col-sm-6 col-md-3">
-                <label className="w-100 mb-3">
-                  Description:
-                  <input
-                    type="text"
-                    name="description"
-                    className="form-control"
-                  />
-                </label>
+                <StandardFieldWrapper<IFormData> label="Description:">
+                  <StandardTextInput<IFormData> name="description" />
+                </StandardFieldWrapper>
               </div>
               <div className="col-sm-6 col-md-3">
-                <label className="w-100 mb-3">
-                  Include Inactive:
-                  <br />
-                  <input type="checkbox" name="includeInactive" />
-                </label>
+                <StandardFieldWrapper<IFormData> label="Include Inactive:">
+                  <StandardCheckbox<IFormData> name="includeInactive" />
+                </StandardFieldWrapper>
               </div>
 
               <div className="col-auto ms-auto d-flex flex-row-reverse">
@@ -204,53 +209,87 @@ export default function Index() {
           </tr>
         </thead>
         <tbody>
-          {items.map((item) => (
-            <tr key={item.AppCodeDetailId}>
-              {/* Tablet/Desktop */}
-              <td scope="row" className="d-none d-md-table-cell">
-                {item.CodeGroup}
-              </td>
-              <td className="d-none d-md-table-cell">{item.CodeValue}</td>
-              <td className="d-none d-md-table-cell">{item.Sort}</td>
-              <td className="d-none d-md-table-cell">{item.Description}</td>
-              <td className="d-none d-md-table-cell">
-                {item.Active ? "yes" : "no"}
-              </td>
-              <td className="d-none d-md-table-cell">
-                {item.Default ? "yes" : "no"}
-              </td>
+          {fetcher.state === "idle" &&
+            items.map((item) => (
+              <tr key={item.AppCodeDetailId}>
+                {/* Tablet/Desktop */}
+                <td scope="row" className="d-none d-md-table-cell">
+                  {item.CodeGroup}
+                </td>
+                <td className="d-none d-md-table-cell">{item.CodeValue}</td>
+                <td className="d-none d-md-table-cell">{item.Sort}</td>
+                <td className="d-none d-md-table-cell">{item.Description}</td>
+                <td className="d-none d-md-table-cell">
+                  {item.Active ? "yes" : "no"}
+                </td>
+                <td className="d-none d-md-table-cell">
+                  {item.Default ? "yes" : "no"}
+                </td>
 
-              {/* Mobile */}
-              <td scope="row" className="d-table-cell d-md-none">
-                <h4 className="mb-0">Code Group: {item.CodeGroup}</h4>
-                <strong>Code Value:</strong> {item.CodeValue}
-                <br />
-                <strong>Sort:</strong> {item.Sort}
-                <br />
-                <strong>Description:</strong> {item.Description}
-                <br />
-                <strong>Active?</strong> {item.Active ? "yes" : "no"}
-                <br />
-                <strong>Default?</strong> {item.Default ? "yes" : "no"}
-              </td>
+                {/* Mobile */}
+                <td scope="row" className="d-table-cell d-md-none">
+                  <h4 className="mb-0">Code Group: {item.CodeGroup}</h4>
+                  <strong>Code Value:</strong> {item.CodeValue}
+                  <br />
+                  <strong>Sort:</strong> {item.Sort}
+                  <br />
+                  <strong>Description:</strong> {item.Description}
+                  <br />
+                  <strong>Active?</strong> {item.Active ? "yes" : "no"}
+                  <br />
+                  <strong>Default?</strong> {item.Default ? "yes" : "no"}
+                </td>
 
-              <td>
-                <Link to={`${item.AppCodeDetailId}/edit`}>Edit</Link>
-                <br />
-                <Link
-                  to={`${item.AppCodeDetailId}/delete`}
-                  className="text-danger"
-                  onClick={(e) => {
-                    if (!confirm("Are you sure?")) {
-                      e.preventDefault();
-                    }
-                  }}
-                >
-                  Delete
-                </Link>
-              </td>
-            </tr>
-          ))}
+                <td>
+                  <Link to={`${item.AppCodeDetailId}`}>View</Link>
+                  <br />
+                  <Link to={`${item.AppCodeDetailId}/edit`}>Edit</Link>
+                  <br />
+                  <Link
+                    to={`${item.AppCodeDetailId}/delete`}
+                    className="text-danger"
+                    onClick={(e) => {
+                      if (!confirm("Are you sure?")) {
+                        e.preventDefault();
+                      }
+                    }}
+                  >
+                    Delete
+                  </Link>
+                </td>
+              </tr>
+            ))}
+
+          {(fetcher.state === "loading" || fetcher.state === "submitting") && (
+            <>
+              {[1, 2, 3].map((row) => (
+                <tr key={row}>
+                  <td>
+                    <div className="placeholder-glow">
+                      <span
+                        className="placeholder"
+                        style={{ width: "400px" }}
+                      ></span>
+                    </div>
+                  </td>
+                  {[1, 2, 3, 4, 5].map((col) => (
+                    <td key={col}>
+                      <div className="placeholder-glow">
+                        <span className="placeholder w-75"></span>
+                      </div>
+                    </td>
+                  ))}
+                  <td key="actions">
+                    <div className="placeholder-glow">
+                      <span className="placeholder w-100"></span>
+                      <span className="placeholder w-75"></span>
+                      <span className="placeholder w-100"></span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </>
+          )}
         </tbody>
       </table>
     </div>

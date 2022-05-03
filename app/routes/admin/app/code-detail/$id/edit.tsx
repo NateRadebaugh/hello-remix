@@ -8,30 +8,49 @@ import {
   useTransition,
 } from "@remix-run/react";
 import invariant from "tiny-invariant";
+import StandardCheckbox from "~/components/standard-checkbox";
+import StandardFieldWrapper from "~/components/standard-field-wrapper";
+import StandardTextInput from "~/components/standard-text-input";
 import type { AppCodeDetail } from "~/models/appCodeDetail.server";
 import {
   createAppCodeDetail,
   getAppCodeDetail,
   updateAppCodeDetail,
 } from "~/models/appCodeDetail.server";
+import type { Session } from "~/session";
 import { getUserSession, requireUserSession } from "~/session";
 import { stringInvariant } from "~/utils/invariants";
 import { parseCheckbox, parseInt } from "~/utils/parse";
-import { ActionFunction } from "~/utils/types";
+import type { ActionFunction } from "~/utils/types";
 
 interface LoaderData {
   isEdit: boolean;
-  item: AppCodeDetail | undefined;
+  item: Awaited<ReturnType<typeof getOne>> | undefined;
+}
+
+interface IFormData extends AppCodeDetail {}
+
+async function getOne(session: Session, id: number) {
+  return await getAppCodeDetail(session, {
+    AppCodeDetailId: id,
+
+    select: {
+      AppCodeDetailId: true,
+      CodeGroup: true,
+      CodeValue: true,
+      Description: true,
+      Active: true,
+      Default: true,
+      Sort: true,
+    },
+  });
 }
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   const session = await requireUserSession(request);
   if (params.id !== undefined) {
     const id = parseInt(params.id);
-
-    const item = await getAppCodeDetail(session, {
-      AppCodeDetailId: id,
-    });
+    const item = await getOne(session, id);
     invariant(item, "AppCodeDetail not found");
     return json<LoaderData>({ isEdit: true, item });
   }
@@ -41,7 +60,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 
 type SaveError = Partial<Record<keyof AppCodeDetail, string>>;
 
-export const action: ActionFunction<AppCodeDetail> = async ({ request, params }) => {
+export const action: ActionFunction<AppCodeDetail> = async ({
+  request,
+  params,
+}) => {
   const session = await getUserSession(request);
   const formData = await request.formData();
 
@@ -108,89 +130,64 @@ export default function EditAppCodeDetail() {
     <Form key={item?.AppCodeDetailId} method="post">
       <fieldset disabled={Boolean(transition.submission)}>
         <h1>{isEdit ? "Edit" : "New"} App Code Detail</h1>
-        <p>
-          <label className="w-100">
-            Group:{" "}
-            {errors?.CodeGroup ? (
-              <em className="text-danger">{errors.CodeGroup}</em>
-            ) : null}{" "}
-            <input
-              type="text"
-              className="form-control"
-              name="CodeGroup"
-              defaultValue={item?.CodeGroup}
-            />
-          </label>
-        </p>
-        <p>
-          <label className="w-100">
-            Value:{" "}
-            {errors?.CodeValue ? (
-              <em className="text-danger">{errors.CodeValue}</em>
-            ) : null}{" "}
-            <input
-              type="text"
-              className="form-control"
-              name="CodeValue"
-              defaultValue={item?.CodeValue}
-            />
-          </label>
-        </p>
-        <p>
-          <label className="w-100">
-            Description:{" "}
-            {errors?.Description ? (
-              <em className="text-danger">{errors.Description}</em>
-            ) : null}{" "}
-            <input
-              type="text"
-              className="form-control"
-              name="Description"
-              defaultValue={item?.Description ?? ""}
-            />
-          </label>
-        </p>
-        <p>
-          <label className="w-100">
-            Active?{" "}
-            {errors?.Active ? (
-              <em className="text-danger">{errors.Active}</em>
-            ) : null}{" "}
-            <input
-              type="checkbox"
-              name="Active"
-              defaultChecked={item?.Active ?? true}
-            />
-          </label>
-        </p>
-        <p>
-          <label className="w-100">
-            Default?{" "}
-            {errors?.Default ? (
-              <em className="text-danger">{errors.Default}</em>
-            ) : null}{" "}
-            <input
-              type="checkbox"
-              name="Default"
-              defaultChecked={item?.Default ?? false}
-            />
-          </label>
-        </p>
-        <p>
-          <label className="w-100">
-            Sort:{" "}
-            {errors?.Sort ? (
-              <em className="text-danger">{errors.Sort}</em>
-            ) : null}{" "}
-            <input
-              type="number"
-              className="form-control"
-              name="Sort"
-              min={0}
-              defaultValue={item?.Sort ?? "0"}
-            />
-          </label>
-        </p>
+
+        <StandardFieldWrapper<IFormData>
+          label="Group:"
+          required
+          error={errors?.CodeGroup}
+        >
+          <StandardTextInput<IFormData>
+            name="CodeGroup"
+            defaultValue={item?.CodeGroup}
+          />
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData>
+          label="Value:"
+          required
+          error={errors?.CodeValue}
+        >
+          <StandardTextInput<IFormData>
+            name="CodeValue"
+            defaultValue={item?.CodeValue}
+          />
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData>
+          label="Description:"
+          error={errors?.Description}
+        >
+          <StandardTextInput<IFormData>
+            name="Description"
+            defaultValue={item?.Description ?? ""}
+          />
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData> label="Active?" error={errors?.Active}>
+          <StandardCheckbox<IFormData>
+            name="Active"
+            defaultChecked={item?.Active ?? true}
+          />
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData>
+          label="Default?"
+          error={errors?.Default}
+        >
+          <StandardCheckbox<IFormData>
+            name="Default"
+            defaultChecked={item?.Default ?? true}
+          />
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData> label="Sort:" error={errors?.Sort}>
+          <StandardTextInput<IFormData>
+            name="Sort"
+            defaultValue={item?.Sort ?? ""}
+            required
+          />
+        </StandardFieldWrapper>
+
         <p>
           <button type="submit" className="btn btn-primary me-2">
             {transition.submission ? "Saving..." : "Save"}

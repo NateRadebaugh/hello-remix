@@ -11,6 +11,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     await getAppCodeDetailListItems(session, {
       where: {
         CodeGroup: "SecurityUser.UserType",
+        Active: true,
       },
     })
   );

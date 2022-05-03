@@ -2,21 +2,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { useQuery } from "react-query";
 
-export interface StandardDropdownProps<
-  TModel,
-  TMultiple extends never | true = never
-> {
-  name: string;
-  defaultValue?: TMultiple extends boolean ? string[] : string | undefined;
-  multiple?: TMultiple;
+export interface StandardDropdownProps<TFormData, TModel> {
+  name: Extract<keyof TFormData, string>;
+  defaultValue?: string[] | string | undefined;
   initialData: TModel[];
   placeholder?: string;
   fetcher: () => Promise<TModel[]>;
-  labelField: keyof TModel;
-  valueField: keyof TModel;
+  labelField: Extract<keyof TModel, string>;
+  valueField: Extract<keyof TModel, string>;
 }
 
-export default function StandardDropdown<TModel>({
+export default function StandardDropdown<TFormData, TModel>({
   name,
   defaultValue,
   initialData,
@@ -24,7 +20,7 @@ export default function StandardDropdown<TModel>({
   fetcher,
   valueField,
   labelField,
-}: StandardDropdownProps<TModel>) {
+}: StandardDropdownProps<TFormData, TModel>) {
   const { isLoading, error, data } = useQuery<
     Awaited<ReturnType<typeof fetcher>>
   >("repoData", fetcher, { initialData: initialData });
@@ -43,21 +39,19 @@ export default function StandardDropdown<TModel>({
   if (error) return <>An error has occurred.</>;
 
   return (
-    <>
-      <select className="form-select" name={name} defaultValue={defaultValue}>
-        <option value="" disabled hidden>
-          {placeholder}
+    <select className="form-select" name={name} defaultValue={defaultValue}>
+      <option value="" disabled hidden>
+        {placeholder}
+      </option>
+      <option></option>
+      {data?.map((option) => (
+        <option
+          key={option[valueField] as any}
+          value={option[valueField] as any}
+        >
+          {option[labelField] as any}
         </option>
-        <option></option>
-        {data?.map((option) => (
-          <option
-            key={option[valueField] as any}
-            value={option[valueField] as any}
-          >
-            {option[labelField] as any}
-          </option>
-        ))}
-      </select>
-    </>
+      ))}
+    </select>
   );
 }

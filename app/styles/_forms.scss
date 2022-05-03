@@ -1,0 +1,6 @@
+.border-danger {
+  .form-control,
+  .form-select {
+    @extend .border-danger;
+  }
+}

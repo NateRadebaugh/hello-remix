@@ -14,7 +14,9 @@ import UserTypePicker from "~/components/user-type-picker";
 import { stringInvariant } from "~/utils/invariants";
 import { getUserTypes } from "~/models/appCodeDetail.server";
 import { requireUserSession } from "~/session";
-import { ActionFunction } from "~/utils/types";
+import type { ActionFunction } from "~/utils/types";
+import StandardTextInput from "~/components/standard-text-input";
+import StandardFieldWrapper from "~/components/standard-field-wrapper";
 
 interface LoaderData {
   post: PostSource;
@@ -32,12 +34,12 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   return json(loaderData);
 };
 
-type PostData = {
+type IFormData = {
   title?: string;
   slug?: string;
   type?: string;
   markdown?: string;
-}
+};
 
 type PostError = {
   title?: string;
@@ -46,7 +48,10 @@ type PostError = {
   markdown?: string;
 };
 
-export const action: ActionFunction<PostData> = async ({ request, params }) => {
+export const action: ActionFunction<IFormData> = async ({
+  request,
+  params,
+}) => {
   const formData = await request.formData();
 
   const title = formData.get("title");
@@ -85,53 +90,47 @@ export default function EditPost() {
 
   return (
     <Form key={post.slug} method="post">
+      <h1>Edit Post</h1>
       <fieldset disabled={Boolean(transition.submission)}>
-        <p>
-          <label>
-            Post Slug:{" "}
-            {errors?.slug ? <em className="error">Slug is required</em> : null}
-            <em>{post.slug}</em>
-          </label>
-        </p>
-        <p>
-          <label className="w-100">
-            Post Title:{" "}
-            {errors?.title ? (
-              <em className="error">Title is required</em>
-            ) : null}{" "}
-            <input
-              type="text"
-              className="form-control"
-              name="title"
-              defaultValue={post.title}
-            />
-          </label>
-        </p>
-        <p>
-          <label className="w-100">
-            User Type:{" "}
-            {errors?.type ? <em className="error">Type is required</em> : null}{" "}
-            <UserTypePicker
-              name="type"
-              defaultValue={post.type}
-              initialData={initialUserTypeOptions}
-            />
-          </label>
-        </p>
-        <p>
-          <label htmlFor="markdown">Markdown:</label>{" "}
-          {errors?.markdown ? (
-            <em className="error">Markdown is required</em>
-          ) : null}
-          <br />
-          <textarea
-            id="markdown"
-            className="form-control"
+        <StandardFieldWrapper<IFormData>
+          label="Post Slug:"
+          error={errors?.slug}
+        >
+          <em>{post.slug}</em>
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData>
+          label="Post Title:"
+          error={errors?.title}
+        >
+          <StandardTextInput<IFormData>
+            name="title"
+            defaultValue={post.title}
+          />
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData>
+          label="User Type:"
+          error={errors?.type}
+        >
+          <UserTypePicker<IFormData>
+            name="type"
+            defaultValue={post.type}
+            initialData={initialUserTypeOptions}
+          />
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData>
+          label="Markdown:"
+          error={errors?.markdown}
+        >
+          <StandardTextInput<IFormData>
             rows={10}
             name="markdown"
             defaultValue={post.markdown}
           />
-        </p>
+        </StandardFieldWrapper>
+
         <p>
           <button type="submit" className="btn btn-primary me-2">
             {transition.submission ? "Updating..." : "Update Post"}

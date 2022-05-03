@@ -1,17 +1,19 @@
 import { useQuery } from "react-query";
 import type { getUserTypes } from "~/models/appCodeDetail.server";
+import type { Unarray } from "~/utils/types";
+import StandardDropdown from "./standard-dropdown";
 
-export interface PostTypePickerProps {
-  name: string;
+export interface PostTypePickerProps<TFormData> {
+  name: Extract<keyof TFormData, string>;
   defaultValue?: string;
   initialData: Awaited<ReturnType<typeof getUserTypes>>;
 }
 
-export default function UserTypePicker({
+export default function UserTypePicker<TFormData>({
   name,
   defaultValue,
   initialData,
-}: PostTypePickerProps) {
+}: PostTypePickerProps<TFormData>) {
   const { isLoading, error, data } = useQuery<
     Awaited<ReturnType<typeof getUserTypes>>
   >(
@@ -34,21 +36,22 @@ export default function UserTypePicker({
   if (error) return <>An error has occurred.</>;
 
   return (
-    <>
-      <select
-        className="form-select"
-        name={name}
-        defaultValue={defaultValue ?? ""}
-      >
-        <option value="" disabled hidden>
-          Select a type...
-        </option>
-        {data?.map((option) => (
-          <option key={option.AppCodeDetailId} value={option.CodeValue}>
-            {option.CodeValue}
-          </option>
-        ))}
-      </select>
-    </>
+    <StandardDropdown<
+      TFormData,
+      Unarray<Awaited<ReturnType<typeof getUserTypes>>>
+    >
+      name={name}
+      initialData={initialData}
+      placeholder="Select a type..."
+      labelField="CodeValue"
+      valueField="CodeValue"
+      defaultValue={defaultValue}
+      fetcher={() =>
+        fetch(`/api/user-type-search`).then(
+          (res) =>
+            res.json() as unknown as Awaited<ReturnType<typeof getUserTypes>>
+        )
+      }
+    />
   );
 }

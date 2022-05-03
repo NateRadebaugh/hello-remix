@@ -12,7 +12,18 @@ import UserTypePicker from "~/components/user-type-picker";
 import { stringInvariant } from "~/utils/invariants";
 import { getUserTypes } from "~/models/appCodeDetail.server";
 import { requireUserSession } from "~/session";
-import { ActionFunction } from "~/utils/types";
+import type { ActionFunction } from "~/utils/types";
+import StandardTextInput from "~/components/standard-text-input";
+import StandardFieldWrapper from "~/components/standard-field-wrapper";
+
+// TODO: remove fake timeout
+function sleep(timeout: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+    }, timeout);
+  });
+}
 
 interface LoaderData {
   initialUserTypeOptions: Awaited<ReturnType<typeof getUserTypes>>;
@@ -26,21 +37,21 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   return json(loaderData);
 };
 
-type PostData = {
+type IFormData = {
   title?: string;
   slug?: string;
   type?: string;
   markdown?: string;
-}
-
-type PostError = {
-  title?: boolean;
-  slug?: boolean;
-  type?: boolean;
-  markdown?: boolean;
 };
 
-export const action: ActionFunction<PostData> = async ({ request }) => {
+type PostError = {
+  title?: string;
+  slug?: string;
+  type?: string;
+  markdown?: string;
+};
+
+export const action: ActionFunction<IFormData> = async ({ request }) => {
   const formData = await request.formData();
 
   const slug = formData.get("slug");
@@ -49,10 +60,10 @@ export const action: ActionFunction<PostData> = async ({ request }) => {
   const markdown = formData.get("markdown");
 
   const errors: PostError = {};
-  if (!title) errors.title = true;
-  if (!slug) errors.slug = true;
-  if (!slug) errors.slug = true;
-  if (!markdown) errors.markdown = true;
+  if (!title) errors.title = "Title is required";
+  if (!slug) errors.slug = "Slug is required";
+  if (!type) errors.type = "User Type is required";
+  if (!markdown) errors.markdown = "Markdown is required";
 
   if (Object.keys(errors).length) {
     return json(errors);
@@ -75,42 +86,37 @@ export default function NewPost() {
   return (
     <Form method="post">
       <fieldset disabled={Boolean(transition.submission)}>
-        <p>
-          <label className="w-100">
-            Post Slug:{" "}
-            {errors?.slug ? <em className="error">Slug is required</em> : null}
-            <input type="text" className="form-control" name="slug" />
-          </label>
-        </p>
-        <p>
-          <label className="w-100">
-            Post Title:{" "}
-            {errors?.title ? (
-              <em className="error">Title is required</em>
-            ) : null}{" "}
-            <input type="text" className="form-control" name="title" />
-          </label>
-        </p>
-        <p>
-          <label className="w-100">
-            User Type:{" "}
-            {errors?.title ? <em className="error">Type is required</em> : null}{" "}
-            <UserTypePicker name="type" initialData={initialUserTypeOptions} />
-          </label>
-        </p>
-        <p>
-          <label htmlFor="markdown">Markdown:</label>{" "}
-          {errors?.markdown ? (
-            <em className="error">Markdown is required</em>
-          ) : null}
-          <br />
-          <textarea
-            id="markdown"
-            className="form-control"
-            rows={20}
-            name="markdown"
+        <StandardFieldWrapper<IFormData>
+          label="Post Slug:"
+          error={errors?.slug}
+        >
+          <StandardTextInput<IFormData> name="slug" />
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData>
+          label="Post Title:"
+          error={errors?.title}
+        >
+          <StandardTextInput<IFormData> name="title" />
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData>
+          label="User Type:"
+          error={errors?.type}
+        >
+          <UserTypePicker<IFormData>
+            name="type"
+            initialData={initialUserTypeOptions}
           />
-        </p>
+        </StandardFieldWrapper>
+
+        <StandardFieldWrapper<IFormData>
+          label="Markdown:"
+          error={errors?.markdown}
+        >
+          <StandardTextInput<IFormData> rows={14} name="markdown" />
+        </StandardFieldWrapper>
+
         <p>
           <button type="submit" className="btn btn-primary me-3">
             {transition.submission ? "Creating..." : "Create Post"}

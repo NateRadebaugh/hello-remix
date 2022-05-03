@@ -1,4 +1,4 @@
-import type { SecurityUser } from "@prisma/client";
+import type { Prisma, SecurityUser } from "@prisma/client";
 import invariant from "tiny-invariant";
 import { prisma } from "~/db.server";
 import type { Session } from "~/session";
@@ -46,16 +46,19 @@ export async function authenticateSecurityUser(
   return { securityUser: items[0] };
 }
 
-export function getSecurityUser(
+export function getSecurityUser<TSelect extends Prisma.SecurityUserSelect>(
   session: Session,
   {
+    select,
     SecurityUserId,
   }: {
+    select: TSelect;
     SecurityUserId: number;
   }
 ) {
   invariant(session);
   return prisma.securityUser.findFirst({
+    select: select,
     where: { SecurityUserId },
   });
 }

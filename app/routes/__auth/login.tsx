@@ -2,9 +2,12 @@ import type { LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useTransition } from "@remix-run/react";
 import clsx from "clsx";
+import StandardFieldError from "~/components/standard-field-error";
+import StandardFieldWrapper from "~/components/standard-field-wrapper";
+import StandardTextInput from "~/components/standard-text-input";
 import { authenticateSecurityUser } from "~/models/securityUser.server";
 import { commitSession, getUserSession } from "~/session";
-import { ActionFunction } from "~/utils/types";
+import type { ActionFunction } from "~/utils/types";
 
 // TODO: remove fake timeout
 function sleep(timeout: number): Promise<void> {
@@ -15,46 +18,22 @@ function sleep(timeout: number): Promise<void> {
   });
 }
 
-interface ActionDataValues {
+interface IFormData {
   email: string;
   password: string;
 }
 
-type ActionDataErrors = Record<keyof ActionDataValues, string | undefined>;
+type ActionDataErrors = Record<keyof IFormData, string | undefined>;
 
 interface ActionData {
   error?: string;
   errors: ActionDataErrors;
-  values: ActionDataValues;
+  values: IFormData;
 }
 
-function ValidationMessage({
-  error,
-  isSubmitting,
-}: {
-  error: string | undefined;
-  isSubmitting: boolean;
-}) {
-  if (!error) {
-    return null;
-  }
-
-  return (
-    <div
-      className={clsx([
-        "form-text",
-        isSubmitting ? "text-muted" : "text-danger",
-      ])}
-    >
-      {error}
-    </div>
-  );
-}
-
-export const action: ActionFunction<ActionDataValues> = async ({ request }) => {
-  await sleep(1_000);
+export const action: ActionFunction<IFormData> = async ({ request }) => {
   const formData = await request.formData();
-  const values: ActionDataValues = {
+  const values: IFormData = {
     email: formData.get("email") ?? "",
     password: formData.get("password") ?? "",
   };
@@ -116,69 +95,38 @@ export default function Login() {
   const actionData = useActionData<ActionData>();
 
   return (
-    <>
+    <Form method="post">
       <h1 className="text-center">Log In</h1>
-      <Form method="post">
-        <fieldset disabled={transition.state === "submitting"}>
-          <div className="mb-3">
-            <label htmlFor="email">Email:</label>
-            <input
-              id="email"
-              name="email"
-              type="text"
-              className={clsx([
-                "form-control",
-                transition.state === "idle" &&
-                  actionData?.errors.email &&
-                  "border-danger",
-              ])}
-              defaultValue={actionData?.values.email}
-            />
-            {actionData?.errors.email && (
-              <ValidationMessage
-                isSubmitting={transition.state === "submitting"}
-                error={actionData.errors.email}
-              />
-            )}
-          </div>
-
-          <div className="mb-3">
-            <label htmlFor="password">Password:</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              className={clsx([
-                "form-control",
-                transition.state === "idle" &&
-                  actionData?.errors.password &&
-                  "border-danger",
-              ])}
-              defaultValue={actionData?.values.password}
-            />
-            {actionData?.errors.password && (
-              <ValidationMessage
-                isSubmitting={transition.state === "submitting"}
-                error={actionData.errors.password}
-              />
-            )}
-          </div>
-
-          <ValidationMessage
-            isSubmitting={transition.state === "submitting"}
-            error={actionData?.error}
+      <fieldset disabled={transition.state === "submitting"}>
+        <StandardFieldWrapper label="Email:" error={actionData?.errors.email}>
+          <StandardTextInput<IFormData>
+            name="email"
+            defaultValue={actionData?.values.email}
           />
+        </StandardFieldWrapper>
 
-          <div className="mb-3">
-            <button type="submit" className="btn btn-primary w-100">
-              {transition.state === "submitting" ? "Logging in..." : "Log in"}
-            </button>
-          </div>
-          <div className="text-end">
-            <Link to="/forgot-password">Forgot Password</Link>
-          </div>
-        </fieldset>
-      </Form>
-    </>
+        <StandardFieldWrapper
+          label="Password:"
+          error={actionData?.errors.password}
+        >
+          <StandardTextInput<IFormData>
+            name="password"
+            type="password"
+            defaultValue={actionData?.values.password}
+          />
+        </StandardFieldWrapper>
+
+        <StandardFieldError error={actionData?.error} />
+
+        <div className="mb-3">
+          <button type="submit" className="btn btn-primary w-100">
+            {transition.state === "submitting" ? "Logging in..." : "Log in"}
+          </button>
+        </div>
+        <div className="text-end">
+          <Link to="/forgot-password">Forgot Password</Link>
+        </div>
+      </fieldset>
+    </Form>
   );
 }

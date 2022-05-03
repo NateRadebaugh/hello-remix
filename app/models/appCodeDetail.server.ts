@@ -1,33 +1,28 @@
-import type { AppCodeDetail } from "@prisma/client";
+import type { AppCodeDetail, Prisma } from "@prisma/client";
 import invariant from "tiny-invariant";
 import { prisma } from "~/db.server";
-import { Session } from "~/session";
+import type { Session } from "~/session";
 
-export function getAppCodeDetail(
+export function getAppCodeDetail<TSelect extends Prisma.AppCodeDetailSelect>(
   session: Session,
   {
+    select,
     AppCodeDetailId,
   }: {
+    select: TSelect;
     AppCodeDetailId: number;
   }
 ) {
   invariant(session);
   return prisma.appCodeDetail.findFirst({
+    select: select,
     where: { AppCodeDetailId },
   });
 }
 
-export type WhereType = NonNullable<
-  Parameters<typeof prisma.appCodeDetail.findMany>["0"]
->["where"];
-
-export type SelectType = NonNullable<
-  Parameters<typeof prisma.appCodeDetail.findMany>["0"]
->["select"];
-
 export function getAppCodeDetailListItems(
   session: Session,
-  arg: Parameters<typeof prisma.appCodeDetail.findMany>["0"]
+  arg: Prisma.AppCodeDetailFindManyArgs
 ) {
   invariant(session);
   return prisma.appCodeDetail.findMany(arg);

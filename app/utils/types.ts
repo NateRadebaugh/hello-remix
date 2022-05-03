@@ -18,14 +18,6 @@ export interface DataFunctionArgs<TFormData = unknown> {
   params: Params;
 }
 
-export interface LoaderFunction<TAppData> {
-  (args: DataFunctionArgs<never>):
-    | Promise<TypedResponse<TAppData>>
-    | TypedResponse<TAppData>
-    | Promise<TAppData>
-    | TAppData;
-}
-
 export interface ActionFunction<TFormData, TAppData = unknown> {
   (args: DataFunctionArgs<TFormData>):
     | Promise<TypedResponse<TAppData>>
