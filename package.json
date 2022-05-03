@@ -5,11 +5,14 @@
   "license": "",
   "sideEffects": false,
   "scripts": {
-    "build": "remix build",
-    "dev": "remix dev",
+    "build": "concurrently \"remix build:sass\" \"npm run build:remix\"",
+    "dev": "concurrently \"npm run dev:sass\" \"npm run dev:remix\"",
     "start": "remix-serve build",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "format": "prettier . --write"
+    "format": "prettier . --write",
+    "build:sass": "sass app/:app/",
+    "dev:sass": "sass --watch app/:app/",
+    "dev:remix": "remix dev"
   },
   "dependencies": {
     "@prisma/client": "^3.13.0",
@@ -34,9 +37,11 @@
     "@types/react-dom": "^18.0.3",
     "@typescript-eslint/eslint-plugin": "^5.22.0",
     "@typescript-eslint/parser": "^5.22.0",
+    "concurrently": "^7.1.0",
     "eslint": "^8.14.0",
     "prettier": "^2.6.2",
     "prisma": "^3.13.0",
+    "sass": "^1.51.0",
     "typescript": "^4.6.4"
   },
   "engines": {

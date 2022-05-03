@@ -1,9 +1,4 @@
-import {
-  ActionFunction,
-  LoaderFunction,
-  MetaFunction,
-  redirect,
-} from "@remix-run/node";
+import { LoaderFunction, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -19,8 +14,8 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import Footer from "~/layout/footer";
 import Header from "~/layout/header";
 
-import bootstrapStyles from "bootstrap/dist/css/bootstrap.css";
-import { destroySession, getUserSession } from "./session";
+import appStyles from "./styles/app.css";
+import { getUserSession } from "./session";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +26,7 @@ export const meta: MetaFunction = () => ({
 });
 
 export const links = () => {
-  return [{ rel: "stylesheet", href: bootstrapStyles }];
+  return [{ rel: "stylesheet", href: appStyles }];
 };
 
 type LoaderData = Awaited<ReturnType<typeof getLoaderData>>;
@@ -41,7 +36,7 @@ async function getLoaderData(request: Request) {
   const year = new Date().getFullYear();
   return {
     year: year,
-    session: session?.data,
+    session: session.data,
   };
 }
 
