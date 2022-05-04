@@ -3,3 +3,6 @@ build
 public/build
 node_modules
 package-lock.json
+
+/app/styles/*.css
+/app/styles/*.css.map
