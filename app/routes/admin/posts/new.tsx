@@ -1,5 +1,5 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import type { LoaderFunction } from "~/utils/types";
+import { json, redirect } from "~/utils/types";
 import {
   Form,
   Link,
@@ -29,12 +29,14 @@ interface LoaderData {
   initialUserTypeOptions: Awaited<ReturnType<typeof getUserTypes>>;
 }
 
-export const loader: LoaderFunction = async ({ request, params }) => {
+export const loader: LoaderFunction<LoaderData> = async ({
+  request,
+  params,
+}) => {
   const session = await requireUserSession(request);
-  const loaderData: LoaderData = {
+  return json({
     initialUserTypeOptions: await getUserTypes(session),
-  };
-  return json(loaderData);
+  });
 };
 
 type IFormData = {

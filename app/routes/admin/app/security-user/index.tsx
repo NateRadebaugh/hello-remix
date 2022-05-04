@@ -22,9 +22,6 @@ export default function Index() {
       <div className="d-flex align-items-center justify-content-between">
         <h1>Security User</h1>
         <div>
-          <Link to="new" className="btn btn-primary">
-            New
-          </Link>
         </div>
       </div>
 
@@ -51,9 +48,6 @@ export default function Index() {
             {/* Mobile */}
             <th scope="col" className="d-table-cell d-md-none">
               Security User
-            </th>
-            <th scope="col" className="d-table-cell d-md-none">
-              Actions
             </th>
           </tr>
         </thead>
@@ -102,22 +96,6 @@ export default function Index() {
                         : x.SecurityRole.Name
                     )
                   : "---"}
-              </td>
-
-              <td>
-                <Link to={`${item.SecurityUserId}/edit`}>Edit</Link>
-                <br />
-                <Link
-                  to={`${item.SecurityUserId}/delete`}
-                  className="text-danger"
-                  onClick={(e) => {
-                    if (!confirm("Are you sure?")) {
-                      e.preventDefault();
-                    }
-                  }}
-                >
-                  Delete
-                </Link>
               </td>
             </tr>
           ))}

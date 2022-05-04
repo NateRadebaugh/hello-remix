@@ -1,5 +1,3 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useTransition } from "@remix-run/react";
 import clsx from "clsx";
 import StandardFieldError from "~/components/standard-field-error";
@@ -7,7 +5,8 @@ import StandardFieldWrapper from "~/components/standard-field-wrapper";
 import StandardTextInput from "~/components/standard-text-input";
 import { authenticateSecurityUser } from "~/models/securityUser.server";
 import { commitSession, getUserSession } from "~/session";
-import type { ActionFunction } from "~/utils/types";
+import type { ActionFunction, LoaderFunction } from "~/utils/types";
+import { json, redirect } from "~/utils/types";
 
 // TODO: remove fake timeout
 function sleep(timeout: number): Promise<void> {
@@ -53,7 +52,7 @@ export const action: ActionFunction<IFormData> = async ({ request }) => {
 
   const hasErrors = Object.values(errors).filter(Boolean).length > 0;
   if (hasErrors) {
-    return json<ActionData>({ errors, values }, { status: 422 });
+    return json({ errors, values }, { status: 422 });
   }
 
   const session = await getUserSession(request);
@@ -63,7 +62,7 @@ export const action: ActionFunction<IFormData> = async ({ request }) => {
     password: values.password,
   });
   if (error) {
-    return json<ActionData>({ error, errors, values }, { status: 422 });
+    return json({ error, errors, values }, { status: 422 });
   }
 
   session.set("securityUser", securityUser);
@@ -75,7 +74,7 @@ export const action: ActionFunction<IFormData> = async ({ request }) => {
   });
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction<null> = async ({ request }) => {
   const session = await getUserSession(request);
 
   if (session.has("securityUser")) {

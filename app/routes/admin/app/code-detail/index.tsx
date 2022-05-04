@@ -1,12 +1,11 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { useRef } from "react";
 import StandardDropdown from "~/components/standard-dropdown";
 import { getAppCodeDetailListItems as rawGetAppCodeDetailListItems } from "~/models/appCodeDetail.server";
 import type { Session } from "~/session";
 import { getUserSession, requireUserSession } from "~/session";
-import type { ActionFunction, Unarray } from "~/utils/types";
+import type { ActionFunction, LoaderFunction, Unarray } from "~/utils/types";
+import { json } from "~/utils/types";
 import StandardTextInput from "~/components/standard-text-input";
 import StandardCheckbox from "~/components/standard-checkbox";
 import type { Prisma } from "@prisma/client";
@@ -54,12 +53,12 @@ type IFormData = {
   includeInactive?: "on";
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction<LoaderData> = async ({ request }) => {
   const session = await requireUserSession(request);
   const items = await getAppCodeDetailListItems(session, {
     Active: true,
   });
-  return json<LoaderData>({ items: items });
+  return json({ items: items });
 };
 
 export const action: ActionFunction<IFormData> = async ({

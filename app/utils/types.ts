@@ -1,5 +1,5 @@
 import type { AppLoadContext } from "@remix-run/node";
-import { json as rawJson } from "@remix-run/node";
+import { json as rawJson, redirect as rawRedirect } from "@remix-run/node";
 import type { Params } from "react-router";
 
 export interface TypedRequest<TFormData = unknown>
@@ -9,13 +9,21 @@ export interface TypedRequest<TFormData = unknown>
 
 export interface TypedResponse<TAppData = unknown>
   extends Omit<Response, "json"> {
-  json(): Promise<TAppData>;
+  json: Promise<TAppData>;
 }
 
 export interface DataFunctionArgs<TFormData = unknown> {
   request: TypedRequest<TFormData>;
   context: AppLoadContext;
   params: Params;
+}
+
+export interface LoaderFunction<TAppData, TFormData = unknown> {
+  (args: DataFunctionArgs<TFormData>):
+    | Promise<TypedResponse<TAppData>>
+    | TypedResponse<TAppData>
+    | Promise<TAppData>
+    | TAppData;
 }
 
 export interface ActionFunction<TFormData, TAppData = unknown> {
@@ -30,7 +38,13 @@ export function json<TAppData>(
   data: TAppData,
   init?: number | ResponseInit | undefined
 ): TypedResponse<TAppData> {
-  return rawJson<TAppData>(data, init);
+  return rawJson<TAppData>(data, init) as unknown as TypedResponse<TAppData>;
+}
+
+export function redirect<TAppData>(
+  ...args: Parameters<typeof rawRedirect>
+): TypedResponse<TAppData> {
+  return rawRedirect(...args) as unknown as TypedResponse<TAppData>;
 }
 
 export type Unarray<T> = T extends (infer U)[] ? U : T;

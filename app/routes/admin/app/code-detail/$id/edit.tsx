@@ -1,5 +1,5 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import type { LoaderFunction } from "~/utils/types";
+import { json, redirect } from "~/utils/types";
 import {
   Form,
   Link,
@@ -46,16 +46,22 @@ async function getOne(session: Session, id: number) {
   });
 }
 
-export const loader: LoaderFunction = async ({ request, params }) => {
+export const loader: LoaderFunction<LoaderData> = async ({
+  request,
+  params,
+}) => {
   const session = await requireUserSession(request);
   if (params.id !== undefined) {
     const id = parseInt(params.id);
     const item = await getOne(session, id);
     invariant(item, "AppCodeDetail not found");
-    return json<LoaderData>({ isEdit: true, item });
+    return json({ isEdit: true, item });
   }
 
-  return null;
+  return json({
+    isEdit: false,
+    item: undefined,
+  });
 };
 
 type SaveError = Partial<Record<keyof AppCodeDetail, string>>;
