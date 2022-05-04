@@ -1,5 +1,3 @@
-import { LoaderFunction, MetaFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -16,22 +14,30 @@ import Header from "~/layout/header";
 
 import appStyles from "./styles/app.css";
 import { getUserSession } from "./session";
+import type {
+  LinksFunction,
+  LoaderFunction,
+  MetaFunction,
+  TypedRequest,
+} from "./utils/types";
+import { json } from "./utils/types";
+import { siteTitle } from "config";
 
 const queryClient = new QueryClient();
 
-export const meta: MetaFunction = () => ({
+type LoaderData = Awaited<ReturnType<typeof getLoaderData>>;
+
+export const meta: MetaFunction<LoaderData> = () => ({
   charset: "utf-8",
-  title: "New Remix App",
+  title: siteTitle,
   viewport: "width=device-width,initial-scale=1",
 });
 
-export const links = () => {
+export const links: LinksFunction = () => {
   return [{ rel: "stylesheet", href: appStyles }];
 };
 
-type LoaderData = Awaited<ReturnType<typeof getLoaderData>>;
-
-async function getLoaderData(request: Request) {
+async function getLoaderData<TFormData>(request: TypedRequest<TFormData>) {
   const session = await getUserSession(request);
   const year = new Date().getFullYear();
   return {
@@ -40,7 +46,7 @@ async function getLoaderData(request: Request) {
   };
 }
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction<LoaderData> = async ({ request }) => {
   return json(await getLoaderData(request));
 };
 

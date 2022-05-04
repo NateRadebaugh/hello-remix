@@ -1,4 +1,4 @@
-import type { LoaderFunction } from "~/utils/types";
+import type { LoaderFunction, MetaFunction } from "~/utils/types";
 import { json, redirect } from "~/utils/types";
 import {
   Form,
@@ -22,8 +22,13 @@ import { getUserSession, requireUserSession } from "~/session";
 import { stringInvariant } from "~/utils/invariants";
 import { parseCheckbox, parseInt } from "~/utils/parse";
 import type { ActionFunction } from "~/utils/types";
+import { siteTitle } from "config";
 
-interface LoaderData {
+export const meta: MetaFunction<LoaderData> = () => ({
+  title: "Edit App Code Detail - Admin - " + siteTitle,
+});
+
+export interface LoaderData {
   isEdit: boolean;
   item: Awaited<ReturnType<typeof getOne>> | undefined;
 }

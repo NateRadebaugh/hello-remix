@@ -1,4 +1,8 @@
-import type { AppLoadContext } from "@remix-run/node";
+import type {
+  AppLoadContext,
+  HtmlMetaDescriptor,
+  LinkDescriptor,
+} from "@remix-run/node";
 import { json as rawJson, redirect as rawRedirect } from "@remix-run/node";
 import type { Params } from "react-router";
 
@@ -32,6 +36,19 @@ export interface ActionFunction<TFormData, TAppData = unknown> {
     | TypedResponse<TAppData>
     | Promise<TAppData>
     | TAppData;
+}
+
+export interface MetaFunction<TAppData, TRouteData = unknown> {
+  (args: {
+    data: TAppData;
+    parentsData: TRouteData;
+    params: Params;
+    location: Location;
+  }): HtmlMetaDescriptor;
+}
+
+export interface LinksFunction {
+  (): LinkDescriptor[];
 }
 
 export function json<TAppData>(

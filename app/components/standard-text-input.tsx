@@ -2,7 +2,7 @@ import { useTransition } from "@remix-run/react";
 import clsx from "clsx";
 import StandardFieldError from "./standard-field-error";
 
-export type StandardTextInputProps<TFormData> = (
+export type StandardTextInputProps<TFormData> =
   | (Omit<
       React.DetailedHTMLProps<
         React.InputHTMLAttributes<HTMLInputElement>,
@@ -22,18 +22,14 @@ export type StandardTextInputProps<TFormData> = (
     > & {
       name: Extract<keyof TFormData, string>;
       rows: number;
-    })
-);
+    });
 
 export default function StandardTextInput<TFormData>(
   props: StandardTextInputProps<TFormData>
 ) {
   const { name, className: rawClassName, ...rest } = props;
 
-  const className = clsx([
-    "form-control",
-    rawClassName,
-  ]);
+  const className = clsx(["form-control", rawClassName]);
 
   return (
     <>

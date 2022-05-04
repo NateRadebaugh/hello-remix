@@ -1,17 +1,22 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
+import { siteTitle } from "config";
 import { getSecurityUserListItems } from "~/models/securityUser.server";
 import { requireUserSession } from "~/session";
+import type { LoaderFunction, MetaFunction } from "~/utils/types";
+import { json } from "~/utils/types";
+
+export const meta: MetaFunction<LoaderData> = () => ({
+  title: "Security Users - Admin - " + siteTitle,
+});
 
 type LoaderData = {
   items: Awaited<ReturnType<typeof getSecurityUserListItems>>;
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction<LoaderData> = async ({ request }) => {
   const session = await requireUserSession(request);
   const items = await getSecurityUserListItems(session);
-  return json<LoaderData>({ items });
+  return json({ items });
 };
 
 export default function Index() {
@@ -21,8 +26,7 @@ export default function Index() {
     <div>
       <div className="d-flex align-items-center justify-content-between">
         <h1>Security User</h1>
-        <div>
-        </div>
+        <div></div>
       </div>
 
       <table className="table">

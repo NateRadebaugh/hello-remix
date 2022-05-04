@@ -1,11 +1,12 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
+import { siteTitle } from "config";
 import invariant from "tiny-invariant";
 import { getAppCodeDetail } from "~/models/appCodeDetail.server";
 import { getSecurityUserListItems } from "~/models/securityUser.server";
 import type { Session } from "~/session";
 import { requireUserSession } from "~/session";
+import type { LoaderFunction, MetaFunction } from "~/utils/types";
+import { json } from "~/utils/types";
 
 type LoaderData = {
   item: Awaited<ReturnType<typeof getOne>> | undefined;
@@ -18,6 +19,10 @@ type LoaderData = {
       group: undefined;
     }
 );
+
+export const meta: MetaFunction<LoaderData> = () => ({
+  title: "App Code Detail - Admin - " + siteTitle,
+});
 
 async function getRelatedSecurityUsers(session: Session) {
   return await getSecurityUserListItems(session);
@@ -38,7 +43,10 @@ async function getOne(session: Session, id: number) {
   });
 }
 
-export const loader: LoaderFunction = async ({ request, params }) => {
+export const loader: LoaderFunction<LoaderData> = async ({
+  request,
+  params,
+}) => {
   const session = await requireUserSession(request);
   if (params.id !== undefined) {
     const id = parseInt(params.id);
@@ -49,7 +57,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       case "SecurityUser.UserType":
         {
           const relatedSecurityUsers = await getRelatedSecurityUsers(session);
-          return json<LoaderData>({
+          return json({
             item,
             group: "SecurityUser.UserType",
             relatedItems: relatedSecurityUsers,
@@ -58,14 +66,17 @@ export const loader: LoaderFunction = async ({ request, params }) => {
         break;
 
       default:
-        return json<LoaderData>({
+        return json({
           item,
           group: undefined,
         });
     }
   }
 
-  return null;
+  return json({
+    item: undefined,
+    group: undefined,
+  });
 };
 
 export default function View() {
@@ -144,24 +155,24 @@ export default function View() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rest.relatedItems.map((item) => (
-                    <tr key={item.SecurityUserId}>
+                  {rest.relatedItems.map((relatedItem) => (
+                    <tr key={relatedItem.SecurityUserId}>
                       {/* Tablet/Desktop */}
                       <td scope="row" className="d-none d-md-table-cell">
-                        {item.FirstName} {item.LastName}
+                        {relatedItem.FirstName} {relatedItem.LastName}
                       </td>
                       <td className="d-none d-md-table-cell">
-                        {item.UserName || "---"}
+                        {relatedItem.UserName || "---"}
                       </td>
                       <td className="d-none d-md-table-cell">
-                        {item.EmailAddress || "---"}
+                        {relatedItem.EmailAddress || "---"}
                       </td>
                       <td className="d-none d-md-table-cell">
-                        {item.Active ? "yes" : "no"}
+                        {relatedItem.Active ? "yes" : "no"}
                       </td>
                       <td className="d-none d-md-table-cell">
-                        {item.SecurityUserRoleMembership.length > 0
-                          ? item.SecurityUserRoleMembership.map((x) =>
+                        {relatedItem.SecurityUserRoleMembership.length > 0
+                          ? relatedItem.SecurityUserRoleMembership.map((x) =>
                               x.SecurityRole.ADGroupName
                                 ? `${x.SecurityRole.Name} (ADGroup: ${x.SecurityRole.ADGroupName})`
                                 : x.SecurityRole.Name
@@ -172,18 +183,20 @@ export default function View() {
                       {/* Mobile */}
                       <td scope="row" className="d-table-cell d-md-none">
                         <h4 className="mb-0">
-                          {item.FirstName} {item.LastName}
+                          {relatedItem.FirstName} {relatedItem.LastName}
                         </h4>
-                        <strong>UserName:</strong> {item.UserName || "---"}
+                        <strong>UserName:</strong>{" "}
+                        {relatedItem.UserName || "---"}
                         <br />
                         <strong>EmailAddress:</strong>{" "}
-                        {item.EmailAddress || "---"}
+                        {relatedItem.EmailAddress || "---"}
                         <br />
-                        <strong>Active:</strong> {item.Active ? "yes" : "no"}
+                        <strong>Active:</strong>{" "}
+                        {relatedItem.Active ? "yes" : "no"}
                         <br />
                         <strong>Roles:</strong>{" "}
-                        {item.SecurityUserRoleMembership.length > 0
-                          ? item.SecurityUserRoleMembership.map((x) =>
+                        {relatedItem.SecurityUserRoleMembership.length > 0
+                          ? relatedItem.SecurityUserRoleMembership.map((x) =>
                               x.SecurityRole.ADGroupName
                                 ? `${x.SecurityRole.Name} (ADGroup: ${x.SecurityRole.ADGroupName})`
                                 : x.SecurityRole.Name

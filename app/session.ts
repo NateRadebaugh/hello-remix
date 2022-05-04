@@ -44,7 +44,9 @@ export async function getUserSession(request: TypedRequest): Promise<Session> {
   return session as Session;
 }
 
-export async function requireUserSession(request: TypedRequest): Promise<Session> {
+export async function requireUserSession(
+  request: TypedRequest
+): Promise<Session> {
   // get the session
   const session = await getUserSession(request);
 

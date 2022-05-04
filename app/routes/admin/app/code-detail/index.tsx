@@ -4,12 +4,22 @@ import StandardDropdown from "~/components/standard-dropdown";
 import { getAppCodeDetailListItems as rawGetAppCodeDetailListItems } from "~/models/appCodeDetail.server";
 import type { Session } from "~/session";
 import { getUserSession, requireUserSession } from "~/session";
-import type { ActionFunction, LoaderFunction, Unarray } from "~/utils/types";
+import type {
+  ActionFunction,
+  LoaderFunction,
+  MetaFunction,
+  Unarray,
+} from "~/utils/types";
 import { json } from "~/utils/types";
 import StandardTextInput from "~/components/standard-text-input";
 import StandardCheckbox from "~/components/standard-checkbox";
 import type { Prisma } from "@prisma/client";
 import StandardFieldWrapper from "~/components/standard-field-wrapper";
+import { siteTitle } from "config";
+
+export const meta: MetaFunction<LoaderData> = () => ({
+  title: "App Code Details - Admin - " + siteTitle,
+});
 
 // TODO: remove fake timeout
 function sleep(timeout: number): Promise<void> {

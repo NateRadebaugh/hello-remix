@@ -1,12 +1,22 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getPost } from "~/post";
 import type { Post } from "~/post";
 import { stringInvariant } from "~/utils/invariants";
 import { requireUserSession } from "~/session";
+import { siteTitle } from "config";
+import type { LoaderFunction, MetaFunction } from "~/utils/types";
+import { json } from "~/utils/types";
 
-export const loader: LoaderFunction = async ({ request, params }) => {
+type LoaderData = Awaited<ReturnType<typeof getPost>>;
+
+export const meta: MetaFunction<LoaderData> = ({ data }) => ({
+  title: data.title + " - Post - " + siteTitle,
+});
+
+export const loader: LoaderFunction<LoaderData> = async ({
+  request,
+  params,
+}) => {
   const session = await requireUserSession(request);
   stringInvariant(params.slug);
   return json(await getPost(params.slug));

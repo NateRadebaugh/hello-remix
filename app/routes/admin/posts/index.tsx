@@ -1,8 +1,15 @@
-import { LoaderFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+import { siteTitle } from "config";
 import { requireUserSession } from "~/session";
+import type { LoaderFunction, MetaFunction } from "~/utils/types";
 
-export const loader: LoaderFunction = async ({ request }) => {
+type LoaderData = null;
+
+export const meta: MetaFunction<LoaderData> = () => ({
+  title: "Posts - Admin - " + siteTitle,
+});
+
+export const loader: LoaderFunction<LoaderData> = async ({ request }) => {
   const session = await requireUserSession(request);
   return null;
 };

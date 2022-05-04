@@ -1,17 +1,24 @@
-import { json, LoaderFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-
 import { getPosts } from "~/post";
 import type { Post } from "~/post";
 import { requireUserSession } from "~/session";
+import type { LoaderFunction, MetaFunction } from "~/utils/types";
+import { json } from "~/utils/types";
+import { siteTitle } from "config";
 
-export const loader: LoaderFunction = async ({ request }) => {
+type LoaderData = Awaited<ReturnType<typeof getPosts>>;
+
+export const meta: MetaFunction<LoaderData> = () => ({
+  title: "Posts - " + siteTitle,
+});
+
+export const loader: LoaderFunction<LoaderData> = async ({ request }) => {
   const session = await requireUserSession(request);
   return json(await getPosts());
 };
 
 export default function Posts() {
-  const posts = useLoaderData<Post[]>();
+  const posts = useLoaderData<LoaderData>();
 
   return (
     <div>

@@ -13,16 +13,28 @@ import UserTypePicker from "~/components/user-type-picker";
 import { stringInvariant } from "~/utils/invariants";
 import { getUserTypes } from "~/models/appCodeDetail.server";
 import { requireUserSession } from "~/session";
-import type { ActionFunction, LoaderFunction } from "~/utils/types";
+import type {
+  ActionFunction,
+  LoaderFunction,
+  MetaFunction,
+} from "~/utils/types";
 import StandardTextInput from "~/components/standard-text-input";
 import StandardFieldWrapper from "~/components/standard-field-wrapper";
+import { siteTitle } from "config";
+
+export const meta: MetaFunction<LoaderData> = () => ({
+  title: "Edit Post - Admin - " + siteTitle,
+});
 
 interface LoaderData {
   post: PostSource;
   initialUserTypeOptions: Awaited<ReturnType<typeof getUserTypes>>;
 }
 
-export const loader: LoaderFunction<LoaderData> = async ({ request, params }) => {
+export const loader: LoaderFunction<LoaderData> = async ({
+  request,
+  params,
+}) => {
   const session = await requireUserSession(request);
   stringInvariant(params.slug);
 

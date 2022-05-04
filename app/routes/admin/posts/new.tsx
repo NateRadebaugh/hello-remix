@@ -1,4 +1,4 @@
-import type { LoaderFunction } from "~/utils/types";
+import type { LoaderFunction, MetaFunction } from "~/utils/types";
 import { json, redirect } from "~/utils/types";
 import {
   Form,
@@ -15,6 +15,7 @@ import { requireUserSession } from "~/session";
 import type { ActionFunction } from "~/utils/types";
 import StandardTextInput from "~/components/standard-text-input";
 import StandardFieldWrapper from "~/components/standard-field-wrapper";
+import { siteTitle } from "config";
 
 // TODO: remove fake timeout
 function sleep(timeout: number): Promise<void> {
@@ -28,6 +29,10 @@ function sleep(timeout: number): Promise<void> {
 interface LoaderData {
   initialUserTypeOptions: Awaited<ReturnType<typeof getUserTypes>>;
 }
+
+export const meta: MetaFunction<LoaderData> = () => ({
+  title: "New Post - Admin - " + siteTitle,
+});
 
 export const loader: LoaderFunction<LoaderData> = async ({
   request,
